@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Science Supply Check-In</title>
+<style>
+:root{
+  --ink:#1c2230; --ink-soft:#5a6070; --line:#e2e4ea; --bg:#f6f7f9; --card:#ffffff;
+  --accent:#2f6f5e; --accent-dark:#234f43;
+  --bio:#2f9e5c; --bio-bg:#e6f6ec;
+  --chem:#3b7dd8; --chem-bg:#e8f1fd;
+  --earth:#b3860f; --earth-bg:#fdf6df;
+  --phys:#7c5cbf; --phys-bg:#f1ecfa;
+  --forensics:#c1584a; --forensics-bg:#fbe9e6;
+  --multi:#2f7a7a; --multi-bg:#e3f2f2;
+  --unspec:#767676; --unspec-bg:#ececec;
+  --green:#2f9e5c; --green-bg:#e6f6ec;
+  --amber:#c9860f; --amber-bg:#fdf1de;
+  --red:#c0392b; --red-bg:#fbe9e7;
+  --gray:#8a8f9c; --gray-bg:#eef0f3;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent;}
+.app{max-width:760px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:40px;}
+.topbar{position:sticky;top:0;z-index:20;background:var(--accent-dark);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.topbar .back{background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:9px;font-size:18px;cursor:pointer;flex-shrink:0;}
+.topbar .title{font-size:16px;font-weight:700;flex:1;line-height:1.25;min-width:0;}
+.topbar .sub{font-size:12px;opacity:.85;font-weight:400;}
+.mode-toggle{display:flex;background:rgba(255,255,255,.15);border-radius:9px;padding:2px;flex-shrink:0;}
+.mode-toggle button{border:none;background:transparent;color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:7px;cursor:pointer;opacity:.7;}
+.mode-toggle button.active{background:#fff;color:var(--accent-dark);opacity:1;}
+.content{padding:16px;}
+.hero{padding:6px 4px 18px;}
+.hero h1{font-size:21px;margin:0 0 4px;letter-spacing:-.01em;}
+.hero p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.5;}
+.search-wrap{margin-bottom:16px;}
+.search-input{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);font-size:15px;background:#fff;}
+.search-input:focus{outline:none;border-color:var(--accent);}
+.search-results{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+.search-hit{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;}
+.search-hit:active{background:#f0f1f3;}
+.search-hit .h-desc{font-size:14px;font-weight:600;}
+.search-hit .h-meta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.path-cards{display:flex;flex-direction:column;gap:12px;}
+.path-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .1s;}
+.path-card:active{transform:scale(.98);background:#f0f1f3;}
+.path-card .icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:var(--accent);color:#fff;}
+.path-card .txt h3{margin:0 0 3px;font-size:15.5px;}
+.path-card .txt p{margin:0;font-size:13px;color:var(--ink-soft);}
+.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:22px 0 10px;}
+.grid-list{display:flex;flex-direction:column;gap:10px;}
+.list-btn{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.list-btn:active{background:#f0f1f3;}
+.list-btn .lb-main{font-size:15px;font-weight:600;}
+.list-btn .lb-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.list-btn .chev{color:var(--ink-soft);font-size:18px;}
+.disc-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+.disc-dot{width:8px;height:8px;border-radius:50%;}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700;}
+.group-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;margin-bottom:10px;}
+.group-card:active{background:#f0f1f3;}
+.group-card .gc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.group-card .gc-vendor{font-size:15px;font-weight:700;}
+.group-card .gc-meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.group-card .gc-progress{height:6px;border-radius:4px;background:var(--gray-bg);overflow:hidden;margin-top:4px;}
+.group-card .gc-progress-fill{height:100%;background:var(--green);}
+/* checklist screen */
+.rollup-banner{background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid var(--line);}
+.rollup-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;}
+.rollup-top h2{font-size:16px;margin:0;}
+.rollup-meta{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;line-height:1.5;}
+.progress-track{height:9px;border-radius:5px;background:var(--gray-bg);overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);transition:width .25s;}
+.progress-text{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+.group-note{background:var(--amber-bg);border:1px solid #f0dca8;color:#7a5a10;font-size:12.5px;border-radius:10px;padding:9px 11px;margin-bottom:14px;line-height:1.5;}
+.item-row{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:9px;}
+.item-top{display:flex;justify-content:space-between;gap:10px;}
+.item-desc{font-size:14.5px;font-weight:600;line-height:1.35;flex:1;}
+.item-no{font-size:11.5px;font-weight:600;color:var(--ink-soft);background:var(--gray-bg);border-radius:5px;padding:1px 6px;margin-left:7px;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+.item-qty{font-size:12.5px;color:var(--ink-soft);white-space:nowrap;padding-top:1px;}
+.item-controls{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+.qbtn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:11px 10px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink-soft);flex:1;min-width:0;text-align:center;line-height:1.25;}
+.qbtn.on-full{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.qbtn.on-partial{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
+.qbtn.on-bo{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.partial-input-wrap{display:flex;align-items:center;gap:6px;margin-top:8px;}
+.partial-input-wrap input[type=number]{width:74px;padding:10px 8px;border-radius:8px;border:1.5px solid var(--line);font-size:15px;}
+.partial-input-wrap label{font-size:12px;color:var(--ink-soft);}
+.note-toggle{font-size:11.5px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 0;font-weight:600;}
+.note-input{width:100%;margin-top:6px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);font-size:13px;font-family:inherit;resize:vertical;}
+.saved-check{font-size:11px;color:var(--green);font-weight:700;opacity:0;transition:opacity .3s;}
+.saved-check.show{opacity:1;}
+.item-row.highlight-target{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,111,94,.18);animation:pulseHighlight 1.6s ease-in-out 2;}
+@keyframes pulseHighlight{0%,100%{background:#fff;}50%{background:var(--green-bg);}}
+/* admin */
+.admin-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.summary-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center;}
+.summary-card .num{font-size:22px;font-weight:800;line-height:1.1;}
+.summary-card .lbl{font-size:11px;color:var(--ink-soft);margin-top:3px;font-weight:600;}
+.filter-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;}
+.filter-chip{flex-shrink:0;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-soft);white-space:nowrap;}
+.filter-chip.active{background:var(--accent-dark);border-color:var(--accent-dark);color:#fff;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14px;}
+.back-link{display:inline-flex;align-items:center;gap:5px;color:var(--accent);background:none;border:none;font-size:13.5px;font-weight:600;cursor:pointer;padding:0 0 14px;}
+::-webkit-scrollbar{display:none;}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<script>
+const GROUPS = [{"id": "flinn-chem-2a", "vendor": "Flinn Scientific", "po": "86202", "discipline": "Chemistry", "setLabel": "Set 2A", "deliverTo": "CHEMISTRY / SET 2A", "items": [{"desc": "Acetic acid, 2.5 L", "qty": 1, "unit": "EA", "unitCost": 79.99, "itemNo": "A0006"}, {"desc": "Acetone, 4L", "qty": 1, "unit": "EA", "unitCost": 42.99, "itemNo": "A0010"}, {"desc": "Ammonium hydroxide 14.8M, 2.5 L", "qty": 1, "unit": "EA", "unitCost": 48.99, "itemNo": "A0052"}, {"desc": "Ammonium thiocyanate, 500 g", "qty": 1, "unit": "EA", "unitCost": 28.99, "itemNo": "A0148"}, {"desc": "Aquarium tank (fish tank) 5.5 gallon", "qty": 1, "unit": "EA", "unitCost": 109.0, "itemNo": "FB0210"}, {"desc": "Barometer, metric", "qty": 1, "unit": "EA", "unitCost": 46.99, "itemNo": "AP5070"}, {"desc": "Brush, beaker", "qty": 3, "unit": "EA", "unitCost": 11.99, "itemNo": "AP8203"}, {"desc": "Calcium chloride, anhydrous, 2 kg", "qty": 6, "unit": "EA", "unitCost": 22.99, "itemNo": "C0017"}, {"desc": "Copper I chloride", "qty": 1, "unit": "EA", "unitCost": 16.29, "itemNo": "C0112"}, {"desc": "Copper II chloride, dihydrate crystals, 2 kg", "qty": 2, "unit": "EA", "unitCost": 99.99, "itemNo": "C0162"}, {"desc": "Copper II nitrate trihydrate, crystals, 500 g", "qty": 1, "unit": "EA", "unitCost": 51.99, "itemNo": "C0099"}, {"desc": "Crucible, steel", "qty": 36, "unit": "EA", "unitCost": 18.29, "itemNo": "AP7615"}, {"desc": "Dish, evaporating, porcelain, 70mL, Coors (lab drawer size)", "qty": 12, "unit": "EA", "unitCost": 14.49, "itemNo": "AP1272"}, {"desc": "Drying Rack, Vinyl-Coated", "qty": 2, "unit": "EA", "unitCost": 219.0, "itemNo": "AP1064"}, {"desc": "Ethyl alcohol, ethanol, 95%, denatured, 20 L", "qty": 1, "unit": "EA", "unitCost": 169.0, "itemNo": "E0011"}], "hasPO": true, "groupNote": null}, {"id": "flinn-chem-2b", "vendor": "Flinn Scientific", "po": "86203", "discipline": "Chemistry", "setLabel": "Set 2B", "deliverTo": "CHEMISTRY / SET 2B", "items": [{"desc": "Flasks, Erlenmeyer, graduated, 250 mL", "qty": 6, "unit": "EA", "unitCost": 6.99, "itemNo": "GP3045"}, {"desc": "Flask, filter, 500mL (vacuum filtration with side arm)", "qty": 4, "unit": "EA", "unitCost": 32.99, "itemNo": "GP4073"}, {"desc": "Goggle strap, latex free, package of 10", "qty": 4, "unit": "PK", "unitCost": 23.99, "itemNo": "AP7646"}, {"desc": "Heat of solution hand warmer", "qty": 4, "unit": "EA", "unitCost": 11.49, "itemNo": "AP1933"}, {"desc": "Hydrochloric acid, 12 Molar, PVC coated bottle, 2.5 L", "qty": 3, "unit": "EA", "unitCost": 59.99, "itemNo": "H0005"}, {"desc": "Iron, nails, 1 lb", "qty": 1, "unit": "EA", "unitCost": 9.49, "itemNo": "I0032"}, {"desc": "Iron II chloride, 100 g", "qty": 1, "unit": "EA", "unitCost": 44.99, "itemNo": "F0015"}, {"desc": "Lithium chloride, 500 g", "qty": 1, "unit": "EA", "unitCost": 109.0, "itemNo": "L0075"}, {"desc": "Magnesium, ribbon, 90 feet, 20 g", "qty": 1, "unit": "EA", "unitCost": 16.99, "itemNo": "M0001"}, {"desc": "Magnetic Stirrer, EcoStir", "qty": 4, "unit": "EA", "unitCost": 86.99, "itemNo": "AP9552"}, {"desc": "Parafilm M, 4\" x 125'", "qty": 2, "unit": "BX", "unitCost": 35.99, "itemNo": "AP1501"}, {"desc": "Pipet, beral-type, thin stem, graduated, 5 mL, pkg of 500", "qty": 2, "unit": "PK", "unitCost": 39.99, "itemNo": "AP1516"}, {"desc": "Potassium, lab grade, 5 pieces", "qty": 3, "unit": "BT", "unitCost": 69.99, "itemNo": "P0204"}, {"desc": "Potassium carbonate, 500 g", "qty": 3, "unit": "EA", "unitCost": 24.99, "itemNo": "P0038"}, {"desc": "Potassium chlorate, 500 g", "qty": 1, "unit": "EA", "unitCost": 22.99, "itemNo": "P0040"}], "hasPO": true, "groupNote": null}, {"id": "flinn-physics-3", "vendor": "Flinn Scientific", "po": "86206", "discipline": "Physics", "setLabel": "Set 3", "deliverTo": "PHYSICS AND PHY SCI / SET 3", "items": [{"desc": "Support Rod, Aluminum", "qty": 7, "unit": "EA", "unitCost": 3.49, "itemNo": "AP7938"}, {"desc": "Spectrum Tube Power Supply", "qty": 1, "unit": "EA", "unitCost": 299.0, "itemNo": "AP1327"}, {"desc": "Pulley with Clamp", "qty": 7, "unit": "EA", "unitCost": 17.99, "itemNo": "AP5700"}, {"desc": "Electric Charge Inquiry Lab", "qty": 1, "unit": "EA", "unitCost": 66.99, "itemNo": "AP8000"}, {"desc": "Motor, St. Louis", "qty": 2, "unit": "EA", "unitCost": 86.99, "itemNo": "AP4629"}, {"desc": "Beakers, Borosilicate Glass, 600-mL", "qty": 14, "unit": "EA", "unitCost": 6.99, "itemNo": "GP1030"}, {"desc": "Beakers, Borosilicate Glass, 400-mL", "qty": 14, "unit": "EA", "unitCost": 6.29, "itemNo": "GP1025"}, {"desc": "Science Lab Beakers, Borosilicate Glass, 250-mL", "qty": 14, "unit": "EA", "unitCost": 5.99, "itemNo": "GP1020"}, {"desc": "Sucrose, Laboratory Grade, 2 kg", "qty": 1, "unit": "EA", "unitCost": 33.99, "itemNo": "S0136"}, {"desc": "Ethyl Alcohol, 95%, 4 L", "qty": 1, "unit": "EA", "unitCost": 34.99, "itemNo": "E0010"}, {"desc": "Cylinder, Borosilicate Glass, Plastic Base, 50 mL", "qty": 10, "unit": "EA", "unitCost": 12.99, "itemNo": "GP2044"}], "hasPO": true, "groupNote": null}, {"id": "flinn-bio-1", "vendor": "Flinn Scientific", "po": "86230", "discipline": "Biology", "setLabel": "Set 1", "deliverTo": "BIOLOGY / SET 1", "items": [{"desc": "Hydrion Insta-Chek 0-13 Refill, package of 5", "qty": 5, "unit": "PK", "unitCost": 30.59, "itemNo": "AP5412"}, {"desc": "Sodium Hydroxide, Laboratory Grade, 2kg", "qty": 1, "unit": "EA", "unitCost": 36.99, "itemNo": "S0077"}, {"desc": "Bromthymol Blue Indicator Solution, 1000mL", "qty": 2, "unit": "EA", "unitCost": 11.99, "itemNo": "B0228"}, {"desc": "Chromatography Paper, Roll", "qty": 2, "unit": "RL", "unitCost": 66.99, "itemNo": "AP8293"}, {"desc": "Cylinder, Borosilicate Glass, Plastic Base, 100mL", "qty": 8, "unit": "EA", "unitCost": 14.99, "itemNo": "GP2046"}, {"desc": "Razor Blades, Single Edge, package of 100", "qty": 1, "unit": "EA", "unitCost": 16.49, "itemNo": "AB1043"}, {"desc": "Lens Paper, 4 x 6, book of 50", "qty": 10, "unit": "EA", "unitCost": 1.99, "itemNo": "AB1175"}, {"desc": "Cover Slips, Glass, No. 2, 22mm x 22mm, 1 oz package", "qty": 6, "unit": "PK", "unitCost": 12.99, "itemNo": "ML1385"}, {"desc": "Parafilm M, 4 x 125' roll", "qty": 2, "unit": "RL", "unitCost": 35.99, "itemNo": "AP1501"}, {"desc": "Hydrogen Peroxide 3%, Laboratory Grade 3.8L", "qty": 4, "unit": "EA", "unitCost": 32.99, "itemNo": "H0038"}, {"desc": "Corn Oil", "qty": 1, "unit": "EA", "unitCost": 10.99, "itemNo": "C0090"}, {"desc": "Flask, Erlenmeyer, Borosilicate Glass, 125 mL", "qty": 7, "unit": "EA", "unitCost": 6.99, "itemNo": "GP3040"}, {"desc": "Gelatin (500 g)", "qty": 1, "unit": "EA", "unitCost": 39.99, "itemNo": "G0004"}, {"desc": "Acetic Acid, Reagent, 2.5 L PVC", "qty": 1, "unit": "EA", "unitCost": 79.99, "itemNo": "A0007"}, {"desc": "Egg Albumin, Protein, 100 g", "qty": 1, "unit": "EA", "unitCost": 23.99, "itemNo": "A0014"}, {"desc": "Lactose, 500g", "qty": 1, "unit": "EA", "unitCost": 25.99, "itemNo": "L0002"}, {"desc": "Levulose, 100g", "qty": 1, "unit": "EA", "unitCost": 11.99, "itemNo": "L0020"}, {"desc": "Petri Dishes, Disposable, 50 x 15 mm, package of 20", "qty": 10, "unit": "PK", "unitCost": 7.99, "itemNo": "AB1470"}, {"desc": "Beakers, Borosilicate Glass, 4000-mL", "qty": 1, "unit": "EA", "unitCost": 87.99, "itemNo": "GP9157"}], "hasPO": true, "groupNote": null}, {"id": "biocorp-1", "vendor": "Bio Corporation", "po": "86207", "discipline": "Biology", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Biology)", "items": [{"desc": "Cat, Double Injected and Skinned", "qty": 30, "unit": "EA", "unitCost": 47.0, "itemNo": "SC1418T"}, {"desc": "Cat, Pregnant", "qty": 2, "unit": "EA", "unitCost": 60.0, "itemNo": "SCP23P"}, {"desc": "Preserved Starfish", "qty": 24, "unit": "EA", "unitCost": 4.05, "itemNo": "SF0406P"}, {"desc": "Preserved Earthworms, package of 10", "qty": 3, "unit": "PK", "unitCost": 6.2, "itemNo": "EW0709J"}, {"desc": "Class Set - Clam, package of 15", "qty": 2, "unit": "PK", "unitCost": 29.4, "itemNo": "CSCL01P"}, {"desc": "Preserved Pigeon", "qty": 24, "unit": "EA", "unitCost": 10.15, "itemNo": "PG0002P"}, {"desc": "Leopard Frogs", "qty": 140, "unit": "EA", "unitCost": 7.3, "itemNo": "LF0500P"}, {"desc": "Fetal Pigs 13-14\", Double Injected, Vacuum Sealed", "qty": 30, "unit": "EA", "unitCost": 18.19, "itemNo": "FP1417P"}, {"desc": "Shipping", "qty": 1, "unit": "EA", "unitCost": 300.0, "itemNo": null}], "hasPO": true, "groupNote": null}, {"id": "biocorp-2", "vendor": "Bio Corporation", "po": "86319", "discipline": "Biology", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Biology)", "items": [{"desc": "Rat 7-9, Plain, Vacuum Packed", "qty": 60, "unit": "EA", "unitCost": 9.6, "itemNo": "RT0709P"}, {"desc": "Beef Eye, Vacuum Packed", "qty": 40, "unit": "EA", "unitCost": 2.2, "itemNo": "B005P"}, {"desc": "Preserved Bullfrog 6-7, Plain, Vacuum Packed", "qty": 4, "unit": "EA", "unitCost": 13.4, "itemNo": "BF0607P"}, {"desc": "Freight", "qty": 1, "unit": "EA", "unitCost": 142.09, "itemNo": null}], "hasPO": true, "groupNote": null}, {"id": "carolina-bio-1", "vendor": "Carolina Biological Supply", "po": "86227", "discipline": "Biology", "setLabel": "Set 1", "deliverTo": "BIOLOGY / SET 1", "items": [{"desc": "Black Pepper, Pack", "qty": 4, "unit": "EA", "unitCost": 4.55, "itemNo": "971849"}, {"desc": "Carolina ABO-Rh Blood Typing w/Synthetic Blood Kit value kit", "qty": 1, "unit": "EA", "unitCost": 73.85, "itemNo": "700161"}, {"desc": "Economy Scalpel Blades (Blade No. 20), box of 100", "qty": 1, "unit": "BX", "unitCost": 45.75, "itemNo": "626640"}, {"desc": "Blood Microscope Slides, Frog", "qty": 7, "unit": "EA", "unitCost": 5.95, "itemNo": "313128"}, {"desc": "Luria Broth Agar Ready-to-Pour Media Set", "qty": 6, "unit": "EA", "unitCost": 38.0, "itemNo": "216620"}, {"desc": "Micropipette Tips, Yellow, Nonsterile, 1-200 uL, Rack of 96", "qty": 12, "unit": "EA", "unitCost": 18.95, "itemNo": "215050"}, {"desc": "Sterile Transfer Pipet, calibrated to 1 mL, pack of 100", "qty": 2, "unit": "PK", "unitCost": 46.25, "itemNo": "214551"}, {"desc": "HNPCC: Detecting Inherited Forms of Cancer Green Refill", "qty": 4, "unit": "KT", "unitCost": 152.0, "itemNo": "214824"}, {"desc": "Sheep Brains, dura mater in tact", "qty": 35, "unit": "EA", "unitCost": 22.0, "itemNo": "228717"}, {"desc": "Carolina Explorer Digital Water Bath (6 L)", "qty": 1, "unit": "EA", "unitCost": 372.06, "itemNo": "216303"}, {"desc": "Protoslo Quieting Solution, Laboratory Grade 15mL", "qty": 4, "unit": "EA", "unitCost": 8.95, "itemNo": "885141"}, {"desc": "Spot Plate, HDPE 12 wells", "qty": 42, "unit": "EA", "unitCost": 2.0, "itemNo": "743044"}, {"desc": "Filter Paper, Qualitative, 11 cm, Pack of 100", "qty": 4, "unit": "PK", "unitCost": 9.95, "itemNo": "712802"}], "hasPO": true, "groupNote": null}, {"id": "carolina-earth-2", "vendor": "Carolina Biological Supply", "po": "86232", "discipline": "Earth Science", "setLabel": "Set 2", "deliverTo": "EARTH SCIENCE / SET 2", "items": [{"desc": "Cylinder, Graduated, PMP, 100 mL, Pack of 33", "qty": 1, "unit": "PK", "unitCost": 306.64, "itemNo": "974423"}, {"desc": "Seed, Little Marvel Pea, Pack of 60", "qty": 5, "unit": "PK", "unitCost": 2.65, "itemNo": "971112"}, {"desc": "Filter Paper, Qualitative, Pack of 100, 11 cm", "qty": 6, "unit": "PK", "unitCost": 9.95, "itemNo": "712802"}], "hasPO": true, "groupNote": null}, {"id": "carolina-physforensics-3", "vendor": "Carolina Biological Supply", "po": "86235", "discipline": "Physics & Forensics", "setLabel": "Set 3", "deliverTo": "PHYSICS AND FORENSICS / SET 3", "items": [{"desc": "Balance Security Device", "qty": 1, "unit": "EA", "unitCost": 32.0, "itemNo": "702189"}, {"desc": "Electric Balance (5000 g x 1 g)", "qty": 1, "unit": "EA", "unitCost": 315.0, "itemNo": "702015"}, {"desc": "Forensic Drug Test Kit", "qty": 1, "unit": "EA", "unitCost": 155.5, "itemNo": "966887"}], "hasPO": true, "groupNote": null}, {"id": "fisher-1", "vendor": "Fisher Scientific", "po": "86237", "discipline": "Chemistry", "setLabel": null, "deliverTo": "KARL CRADDOCK (inferred: Chemistry)", "items": [{"desc": "Hydrogen peroxide, 30%, 500 mL bottle, case of 6", "qty": 1, "unit": "CS", "unitCost": 642.0, "itemNo": "BP2633500"}, {"desc": "Magnesium metal turnings, 500 g", "qty": 1, "unit": "EA", "unitCost": 122.0, "itemNo": "AAL0812036"}], "hasPO": true, "groupNote": null}, {"id": "minipcr-bio-1", "vendor": "MiniPCR", "po": "86239", "discipline": "Biology", "setLabel": "Set 1", "deliverTo": "BIOLOGY / SET 1", "items": [{"desc": "Gyro Plus Microcentrifuge, Variable Speed", "qty": 1, "unit": "EA", "unitCost": 220.0, "itemNo": "QP-1800-02"}, {"desc": "SeeGreen All-In-One Agarose Tabs, 20 pcs", "qty": 1, "unit": "PK", "unitCost": 43.0, "itemNo": "RG-1500-20"}, {"desc": "blueGel electrophoresis with built-in transilluminator", "qty": 1, "unit": "EA", "unitCost": 309.0, "itemNo": "QP-1500-01"}, {"desc": "TBE Electrophoresis Buffer, powder makes 3L", "qty": 2, "unit": "EA", "unitCost": 16.0, "itemNo": "RG-1502-05"}, {"desc": "100-1000 uL Adjustable Volume Micropipette", "qty": 2, "unit": "EA", "unitCost": 59.0, "itemNo": "QP-1001-02"}, {"desc": "100-1000 uL micropipette tips - 2 racks of 96", "qty": 4, "unit": "PK", "unitCost": 20.0, "itemNo": "CM-1001-03"}, {"desc": "2-200 uL micropipette tips - 2 racks of 96", "qty": 10, "unit": "PK", "unitCost": 16.0, "itemNo": "CM-1001-01"}, {"desc": "Fold-a-View Photo Documentation Hood", "qty": 1, "unit": "EA", "unitCost": 11.0, "itemNo": "7AA93"}], "hasPO": true, "groupNote": null}, {"id": "minipcr-forensics-2", "vendor": "MiniPCR", "po": "86240", "discipline": "Forensics", "setLabel": "Set 2", "deliverTo": "FORENSICS / SET 2", "items": [{"desc": "SeeGreen All-In-One Agarose Tabs, 20 pcs", "qty": 1, "unit": "PK", "unitCost": 42.0, "itemNo": "RG-1500-20"}, {"desc": "Micropipette", "qty": 2, "unit": "EA", "unitCost": 59.0, "itemNo": "QP-1001-01"}, {"desc": "TBE Electrophoresis Buffer, powder makes 3L", "qty": 2, "unit": "EA", "unitCost": 16.0, "itemNo": "RG-1502-05"}, {"desc": "Wrongfully Convicted", "qty": 2, "unit": "EA", "unitCost": 71.0, "itemNo": "KT-1504-01"}, {"desc": "Learning Lab Companion Kit", "qty": 1, "unit": "EA", "unitCost": 37.0, "itemNo": "KT-1510-01"}], "hasPO": true, "groupNote": null}, {"id": "pasco-1", "vendor": "Pasco Scientific", "po": "86241", "discipline": "Physics", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Physics)", "items": [{"desc": "Stainless Steel Rod, 120 cm", "qty": 7, "unit": "EA", "unitCost": 60.0, "itemNo": "ME-8741"}, {"desc": "Large Table Clamp", "qty": 4, "unit": "EA", "unitCost": 165.0, "itemNo": "ME-9472"}, {"desc": "Motion Sensor Guard", "qty": 7, "unit": "EA", "unitCost": 22.0, "itemNo": "SE-7256"}, {"desc": "Demo Spring Set", "qty": 1, "unit": "EA", "unitCost": 49.0, "itemNo": "ME-9866"}, {"desc": "Equal Length Spring Set", "qty": 1, "unit": "EA", "unitCost": 55.0, "itemNo": "ME-8970"}, {"desc": "Conductive Paper with Grid, 50 pack", "qty": 1, "unit": "PK", "unitCost": 60.0, "itemNo": "PD-9025B"}, {"desc": "Super pulley with clamp", "qty": 20, "unit": "EA", "unitCost": 36.0, "itemNo": "ME-9448B"}, {"desc": "Mini Projectile Launcher", "qty": 2, "unit": "EA", "unitCost": 115.0, "itemNo": "94-1970"}, {"desc": "Dynamics Track End Stop (2 pack)", "qty": 2, "unit": "PK", "unitCost": 29.0, "itemNo": "ME-8971"}, {"desc": "Ball Ramp Components", "qty": 1, "unit": "EA", "unitCost": 94.0, "itemNo": "ME-7073"}], "hasPO": true, "groupNote": null}, {"id": "sirchie-1", "vendor": "Sirchie", "po": "86242", "discipline": "Forensics", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Forensics)", "items": [{"desc": "Micromax Coveralls (Large)", "qty": 7, "unit": "EA", "unitCost": 13.97, "itemNo": "MICROMAXNSHOOD"}, {"desc": "Mikrosil White", "qty": 1, "unit": "EA", "unitCost": 39.3, "itemNo": "MCM100W"}, {"desc": "MicroMax Boot Covers (Large)", "qty": 7, "unit": "EA", "unitCost": 3.32, "itemNo": "MICROMAXBC"}], "hasPO": true, "groupNote": null}, {"id": "nasco-1", "vendor": "Nasco (via School Specialty)", "po": "86244", "discipline": "Biology", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Biology)", "items": [{"desc": "NASCOGuard, Pig Organ - Kidney (Triple Injected), Preserved", "qty": 35, "unit": "EA", "unitCost": 11.47, "itemNo": "LS03489"}, {"desc": "NASCOGuard, Sheep Organ - Heart, Preserved", "qty": 35, "unit": "EA", "unitCost": 9.95, "itemNo": "LS01155"}, {"desc": "12-Layer MiniDNA Model", "qty": 2, "unit": "EA", "unitCost": 37.95, "itemNo": "SB42168"}, {"desc": "Squid, Plain", "qty": 24, "unit": "EA", "unitCost": 9.75, "itemNo": "LS02421"}, {"desc": "Crayfish- Size: 4 in.-6 in., Injection: Plain, Preserved", "qty": 24, "unit": "EA", "unitCost": 2.85, "itemNo": "LS01314"}], "hasPO": true, "groupNote": null}, {"id": "vwr-wards-1", "vendor": "VWR International (Wards order)", "po": "86197", "discipline": "Biology", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Biology)", "items": [{"desc": "Phosphate Buffer, Solution pH 6.5, 1L", "qty": 4, "unit": "EA", "unitCost": 17.55, "itemNo": "470302-014"}, {"desc": "Effects of Drugs on Daphnia Kit", "qty": 1, "unit": "EA", "unitCost": 157.69, "itemNo": "470018-280"}], "hasPO": true, "groupNote": "Spreadsheet lists these under vendor \"Wards\" but the PO was fulfilled through VWR International/Avantor."}, {"id": "arbor-1", "vendor": "Arbor Scientific", "po": "86198", "discipline": "Physics", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Physics)", "items": [{"desc": "Super Springy", "qty": 2, "unit": "EA", "unitCost": 17.5, "itemNo": "33-0130"}, {"desc": "Introductory Optical System (Optical Bench)", "qty": 15, "unit": "EA", "unitCost": 115.0, "itemNo": "92-7700"}, {"desc": "Investigating Electrical Circuits Kit", "qty": 7, "unit": "KT", "unitCost": 101.0, "itemNo": "96-1500"}, {"desc": "Alligator Leads, 24, Package of 10", "qty": 2, "unit": "PK", "unitCost": 8.95, "itemNo": "P4-3000"}, {"desc": "Cosmetically Flawed Whiteboards, 6 pack", "qty": 1, "unit": "PK", "unitCost": 75.0, "itemNo": "01-6002"}, {"desc": "Whiteboard", "qty": 1, "unit": "EA", "unitCost": 29.5, "itemNo": "01-6001"}], "hasPO": true, "groupNote": null}, {"id": "biorad-1", "vendor": "Bio-Rad Laboratories", "po": "86208", "discipline": "Biology", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Biology)", "items": [{"desc": "1% TAE Mini ReadyAgarose Precast Gel, 7.1 x 10cm, 8 well", "qty": 35, "unit": "EA", "unitCost": 12.6, "itemNo": "1613015"}, {"desc": "U-View 6X Loading Dye", "qty": 1, "unit": "EA", "unitCost": 97.54, "itemNo": "1665112EDU"}, {"desc": "Genes in a bottle", "qty": 2, "unit": "EA", "unitCost": 149.94, "itemNo": "1662300EDU"}, {"desc": "DNA Fingerprinting Kit", "qty": 2, "unit": "EA", "unitCost": 164.0, "itemNo": "1660007EDU"}, {"desc": "1% TAE Precast Gels", "qty": 14, "unit": "EA", "unitCost": 14.0, "itemNo": "1613015 EDU"}], "hasPO": true, "groupNote": null}, {"id": "homescience-1", "vendor": "Home Science Tools", "po": "86243-2", "discipline": "Biology", "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE (inferred: Biology, mixed w/ general lab glassware)", "items": [{"desc": "PYREX Beaker, Low Form, 100 ml", "qty": 6, "unit": "EA", "unitCost": 8.55, "itemNo": "CE-BEAK100"}, {"desc": "Graduated Cylinder, polypropylene, 50 ml", "qty": 7, "unit": "EA", "unitCost": 3.5, "itemNo": "CE-CYPP50"}, {"desc": "Graduated Cylinder, polypropylene, 100 ml", "qty": 7, "unit": "EA", "unitCost": 4.75, "itemNo": "CE-CYPP100"}, {"desc": "pH Papers, 1-14 range, 80 pack", "qty": 7, "unit": "PK", "unitCost": 2.95, "itemNo": "CH-PHSTRIP"}, {"desc": "Frog Blood Slide", "qty": 14, "unit": "EA", "unitCost": 4.5, "itemNo": "MS-FRBLOOD"}], "hasPO": true, "groupNote": null}, {"id": "imiller-capital", "vendor": "I Miller Precision Optical Instruments", "po": "86318", "discipline": null, "setLabel": null, "deliverTo": "KARL CRADDOCK / SCIENCE / 1139.710 (Capital budget - not .410 General Supplies)", "items": [{"desc": "Motic SMZ-171-LED Microscope Series 7.5x-50x Zoom Binocular", "qty": 1, "unit": "EA", "unitCost": 1530.85, "itemNo": "1100200600754"}], "hasPO": true, "groupNote": "Account code 1139.710 (Capital) \u2014 different budget line than the rest of this tool (.410 General Supplies). Included for visibility only; excluded from General Supplies payable totals."}, {"id": "amazon-biology", "vendor": "Amazon", "po": null, "discipline": "Biology", "setLabel": null, "deliverTo": null, "items": [{"desc": "Dissection Plastic Bag Savers", "qty": 1.0, "unit": "box of 100", "unitCost": 13.99, "itemNo": "B0B3FBY13R"}, {"desc": "Chalk Markers", "qty": 30.0, "unit": "box of 8", "unitCost": 7.95, "itemNo": "B07QF31BNY"}, {"desc": "Medium Gloves", "qty": 4.0, "unit": "box of 1000", "unitCost": 33.05, "itemNo": "B0CJV97VJT"}, {"desc": "Large Gloves", "qty": 2.0, "unit": "box of 1000", "unitCost": 31.49, "itemNo": "B0CJVD39RK"}, {"desc": "Cups for Egg Lab", "qty": 1.0, "unit": "box of 250", "unitCost": 22.99, "itemNo": "B0CSZC9CS4"}, {"desc": "Paper Towels", "qty": 1.0, "unit": "box of 12", "unitCost": 22.86, "itemNo": "B09BWFX1L6"}, {"desc": "Colorful Sharpies", "qty": 1.0, "unit": "pack of 24", "unitCost": 10.4, "itemNo": "B06ZZX41Q1"}, {"desc": "Classpack of Markers", "qty": 2.0, "unit": "box", "unitCost": 59.99, "itemNo": "B0002T3WLS"}, {"desc": "Swim Caps, White", "qty": 4.0, "unit": "each", "unitCost": 6.0, "itemNo": "B000I1T836"}, {"desc": "Plastic Wrap", "qty": 1.0, "unit": "each", "unitCost": 20.99, "itemNo": "B0B7VWLV5P"}, {"desc": "Colorful Human Skull", "qty": 1.0, "unit": "each", "unitCost": 36.99, "itemNo": "B09WHHBT21"}, {"desc": "Vinegar", "qty": 1.0, "unit": "4 gallon pack", "unitCost": 27.0, "itemNo": "B0BZJKRXVJ"}, {"desc": "Paper Straws", "qty": 1.0, "unit": "500 pack", "unitCost": 19.99, "itemNo": "B09HCDY86R"}, {"desc": "Plastic Spoons", "qty": 1.0, "unit": "pack of 100", "unitCost": 7.18, "itemNo": "B0B4DGLGR5"}, {"desc": "Extension Cord (6 outlet, 15 ft long)", "qty": 1.0, "unit": "each", "unitCost": 24.99, "itemNo": "B07M95BGZ5"}, {"desc": "Plastic Knives", "qty": 1.0, "unit": "pack of 100", "unitCost": 9.39, "itemNo": "B09PFBDPB3"}, {"desc": "Asparagus Seeds", "qty": 2.0, "unit": "pack of 4", "unitCost": 9.99, "itemNo": "B07YLCTK78"}, {"desc": "Radish Seeds", "qty": 1.0, "unit": "each", "unitCost": 16.95, "itemNo": "B09XN77DCP"}, {"desc": "Coffee Filters", "qty": 2.0, "unit": "Pack of 100", "unitCost": 8.79, "itemNo": "B0BJ6BCRD1"}, {"desc": "Straws", "qty": 1.0, "unit": "Pack of 300", "unitCost": 7.99, "itemNo": "B0DBVC34Y5"}, {"desc": "Paper mache", "qty": 1.0, "unit": "4 lb bag", "unitCost": 56.0, "itemNo": "B0B8GBQTYN"}, {"desc": "Pom poms", "qty": 1.0, "unit": "1000pcs", "unitCost": 9.99, "itemNo": "B01MTOWHJH"}, {"desc": "Disinfectant, All Purpose Spray", "qty": 1.0, "unit": "package of 8", "unitCost": 36.72, "itemNo": "B000EF1FUK"}, {"desc": "9-Volt Batteries", "qty": 2.0, "unit": "package of 8", "unitCost": 12.69, "itemNo": "B00MH4QM1S"}, {"desc": "All-Purpose Cleaner Refill", "qty": 2.0, "unit": "each", "unitCost": 7.14, "itemNo": "B00W28L2L4"}, {"desc": "Hand Soap Refill", "qty": 1.0, "unit": "pkg of 4", "unitCost": 57.99, "itemNo": "B0C824TCXC"}, {"desc": "Ziploc Bags", "qty": 2.0, "unit": "pkg of 150", "unitCost": 6.49, "itemNo": "B014G0APV8"}], "hasPO": false, "groupNote": "Ordered directly through Amazon \u2014 no PO number. Grouped by discipline from the budget worksheet color-coding. Item number shown is the Amazon ASIN."}, {"id": "amazon-chemistry", "vendor": "Amazon", "po": null, "discipline": "Chemistry", "setLabel": null, "deliverTo": null, "items": [{"desc": "Analytical Balance, 500 g capacity, 0.001 g precision \nhttps://a.co/d/7x2dY22", "qty": 1.0, "unit": "each", "unitCost": 135.99, "itemNo": "B0FF9TXPV2"}, {"desc": "AroCare Nitrile Gloves, Latex free, size medium", "qty": 1.0, "unit": "case/1000", "unitCost": 39.99, "itemNo": "B08SJ15R48"}, {"desc": "AroCare Nitrile Gloves, Latex free, size large", "qty": 1.0, "unit": "case/1000", "unitCost": 39.99, "itemNo": "B08SJ15R48"}, {"desc": "Amazon Basics 24-Pack 9V Alkaline Batteries, 5-Year", "qty": 1.0, "unit": "pkg/24", "unitCost": 29.33, "itemNo": "B07MWPHV25"}, {"desc": "Belkin iPad Stand, stationary", "qty": 2.0, "unit": "each", "unitCost": 124.99, "itemNo": "B08P2BNLZF"}, {"desc": "Film canister", "qty": 1.0, "unit": "pkg/30", "unitCost": 11.95, "itemNo": "B07T2SKSS6"}, {"desc": "Giantex Drafting Chair Tall Office Chair with Back", "qty": 3.0, "unit": "each", "unitCost": 84.99, "itemNo": "B07X11CKZS"}, {"desc": "Squeegee", "qty": 1.0, "unit": "each", "unitCost": 19.99, "itemNo": "B0C8NFNZN8"}, {"desc": "Styrofoam Packing Peanuts", "qty": 1.0, "unit": "pkg/7 ft^3", "unitCost": 45.99, "itemNo": "B07C94NY1Q"}], "hasPO": false, "groupNote": "Ordered directly through Amazon \u2014 no PO number. Grouped by discipline from the budget worksheet color-coding. Item number shown is the Amazon ASIN."}, {"id": "amazon-earthscience", "vendor": "Amazon", "po": null, "discipline": "Earth Science", "setLabel": null, "deliverTo": null, "items": [{"desc": "Learning Resources Primary Calculator - Basic Solar and Battery Powered Calculators for Students, Teach Basic Math Operations, School Supplies, Classroom Must Haves for Teachers, Back to School", "qty": 3.0, "unit": "10 per pack", "unitCost": 35.91, "itemNo": "B000CD2MCE"}, {"desc": "Halatool 1.1LBS Sphagnum Moss for Orchids, Plants, Succulent, Carnivorous, 25QT Natural Dried Long Fiber Sphagnum Moss Bulk for Moss Pole, Moss for Plants Indoor and Outdoor Growing Media", "qty": 1.0, "unit": "1.1 lb package", "unitCost": 14.99, "itemNo": "B0BMF4MMY7"}, {"desc": "Astrobrights Mega Collection, Colored Cardstock, Bright Yellow, 320 Sheets, 65 lb/176 gsm, 8.5\" x 11\" - MORE SHEETS! (91625)", "qty": 1.0, "unit": "320 sheets/pack", "unitCost": 16.43, "itemNo": "B07PZFC4Y3"}, {"desc": "12 Pack Acrylic Sign Holder 8.5 x 11, Clear Plastic Display Stands for Tabletop, L-Shape Acrylic Stands for Flyers, Documents, Office, Restaurants, Vertical Sign Holder 8.5x11 for Desktop", "qty": 1.0, "unit": "12 per pack", "unitCost": 32.99, "itemNo": "B0D427ZM9F"}, {"desc": "Neenah Bright White Bright White Card Stock, 96 Bright, 65 lb Cover Weight, 8.5 x 11, 250/Pack", "qty": 4.0, "unit": "250 sheets/pack", "unitCost": 13.84, "itemNo": "B00006IDRW"}, {"desc": "Turbo Bee 5oz Disposable Plastic Cups 500 Pack - Small Drinking & Sample Cups, Bulk Multi-Use Tumblers for Beverages, Mini Desserts, Home, School, Parties, or Commercial Use", "qty": 1.0, "unit": "500 cups/pack", "unitCost": 25.99, "itemNo": "B088PT95TJ"}, {"desc": "Better Office Products 100 Pack \nEVA Foam Sheets, 5.5 x 8.5 Inch, \nAssorted Colors (20 Colors), \n2mm Thick, for Arts and Crafts, \n100 Sheets", "qty": 2.0, "unit": "100\npieces/\npack", "unitCost": 13.98, "itemNo": "B089DPDYKV"}, {"desc": "Dragon Models Apollo 11 Saturn \nV Spacecraft Building Kit, \n1/72-Scale", "qty": 1.0, "unit": "1 Kit", "unitCost": 207.79, "itemNo": "B00BWR65JA"}, {"desc": "Aigybobo 192 Pack Highlighters \nin 6 Assorted Colors, Chisel Tip \nDry-Quickly Highlighters Bulk, \nNo Bleed Highlighter Markers for \nKids Adults, Classroom Teachers \nMust Haves, School Office \nSupplies", "qty": 1.0, "unit": "192 pack", "unitCost": 29.99, "itemNo": "B0DPZTP3YV"}], "hasPO": false, "groupNote": "Ordered directly through Amazon \u2014 no PO number. Grouped by discipline from the budget worksheet color-coding. Item number shown is the Amazon ASIN."}, {"id": "amazon-physics", "vendor": "Amazon", "po": null, "discipline": "Physics", "setLabel": null, "deliverTo": null, "items": [{"desc": "Astrobrights Colored Paper Bright Blue", "qty": 1.0, "unit": "625 sheets", "unitCost": 16.59, "itemNo": "B07Q2N5NM3"}, {"desc": "Astrobrights Colored Paper Bright Orange", "qty": 1.0, "unit": "625 sheets", "unitCost": 16.09, "itemNo": "B07Q2WZP2J"}, {"desc": "Mind Reader Stackable Paper Tray", "qty": 2.0, "unit": "2 pcs", "unitCost": 15.91, "itemNo": "B07NKBP6ZL"}, {"desc": "Double sided Tape Heavy duty, 1\"x9.85\"", "qty": 1.0, "unit": "each", "unitCost": 16.99, "itemNo": "B0CYQ11KCF"}, {"desc": "Vertical Paper Roll Dispenser", "qty": 1.0, "unit": "each", "unitCost": 179.99, "itemNo": "B0FNWGK8NC"}, {"desc": "Wiffle Balls", "qty": 1.0, "unit": "12 pack", "unitCost": 12.99, "itemNo": "B000KA6JR8"}, {"desc": "Laser Levels", "qty": 7.0, "unit": "each", "unitCost": 9.95, "itemNo": "B07WP4165D"}, {"desc": "Ziploc Quart Freezer Bags", "qty": 1.0, "unit": "100 count box", "unitCost": 12.48, "itemNo": "B088XVM1HM"}, {"desc": "Ziploc Gallon Freezer Bags", "qty": 1.0, "unit": "66 count box", "unitCost": 10.69, "itemNo": "B0DGN9C8QF"}, {"desc": "Speakers for Electromagnetism", "qty": 1.0, "unit": "each", "unitCost": 59.0, "itemNo": "B074KJ6JQW"}, {"desc": "PlayDoh", "qty": 1.0, "unit": "each", "unitCost": 7.99, "itemNo": "B00JM5GW10"}, {"desc": "Pink Rubberbands Size 33", "qty": 1.0, "unit": "100/pack", "unitCost": 10.99, "itemNo": "B00TIZ28BC"}, {"desc": "Purple Rubberbands Size 64", "qty": 1.0, "unit": "110/pack", "unitCost": 7.99, "itemNo": "B0B566Q85V"}, {"desc": "Double Sided Removable Tape", "qty": 1.0, "unit": "each", "unitCost": 8.1, "itemNo": "B00449Y41Y"}, {"desc": "Swivel Hooks Size 2(37lb)", "qty": 1.0, "unit": "50 pcs", "unitCost": 11.99, "itemNo": "B0887TJYBT"}, {"desc": "Drop Ceiling Hooks", "qty": 1.0, "unit": "35/pack", "unitCost": 13.99, "itemNo": "B09JKD98Y3"}, {"desc": "Cotter Pins (3/32x1-1/4 inch)", "qty": 1.0, "unit": "20 pcs", "unitCost": 6.45, "itemNo": "B00IZFRPPU"}, {"desc": "Rubber Bouncy Balls (1 in)", "qty": 1.0, "unit": "100/pack", "unitCost": 16.99, "itemNo": "B010LD0QTA"}, {"desc": "Fishing Bottom Sinker Weights(30 g)", "qty": 1.0, "unit": "9 pcs", "unitCost": 12.59, "itemNo": "B08PV1M8LJ"}, {"desc": "Magic YoYo (White)", "qty": 1.0, "unit": "each", "unitCost": 15.99, "itemNo": "B09YV9JX6Z"}, {"desc": "3/4 inch Split Round Keyring", "qty": 1.0, "unit": "50/pack", "unitCost": 3.79, "itemNo": "B07252CCFJ"}, {"desc": "Fooseballs", "qty": 1.0, "unit": "12/pack", "unitCost": 9.59, "itemNo": "B0FF4K4R68"}, {"desc": "15 Quart Container", "qty": 1.0, "unit": "12/pack", "unitCost": 56.98, "itemNo": "B01NBMM34J"}, {"desc": "2.5 Quart Container", "qty": 1.0, "unit": "each", "unitCost": 8.99, "itemNo": "B0GBZH9WJF"}, {"desc": "DIYMAG Large Neodymium Magnet", "qty": 3.0, "unit": "each", "unitCost": 16.99, "itemNo": "B07B8PRB83"}, {"desc": "1000 uF 10v Rubycon Capacitors", "qty": 1.0, "unit": "15/pack", "unitCost": 6.49, "itemNo": "B0F8C495SQ"}, {"desc": "2200 uF 16v Rubycon Capacitors", "qty": 2.0, "unit": "7/pack", "unitCost": 6.99, "itemNo": "B0FVGBGMW2"}, {"desc": "Metal alligator clips", "qty": 2.0, "unit": "50/pack", "unitCost": 9.58, "itemNo": "B08SC3ZNCW"}, {"desc": "Duracell PGD MN1400 Coppertop Battery, Alkaline, C Size (Pack of 72)", "qty": 1.0, "unit": "each", "unitCost": 74.6, "itemNo": "B07SYHW9KM"}, {"desc": "10 pcs Silver 4D balloon, 10 inch Foil Mylar Sphere Balloon for Birthday Party,Wedding,Valentine's Day, Christmas,Baby Shower Decoration Supplies", "qty": 2.0, "unit": "each", "unitCost": 7.99, "itemNo": "B08LT321ZF"}, {"desc": "PATIKIL 200ft 18/2 PVC Wire - CLEAR", "qty": 1.0, "unit": "each", "unitCost": 49.99, "itemNo": "B0DT9R2GVP"}, {"desc": "Zip Ties 8\" (100 pack)", "qty": 1.0, "unit": "100/pack", "unitCost": 3.99, "itemNo": "B09PJ8L58G"}, {"desc": "Rechargeable Battery for TI-84", "qty": 5.0, "unit": "each", "unitCost": 13.14, "itemNo": "B00SMRLU3O"}, {"desc": "Pacon super value poster board, 22\"x28\", white", "qty": 4.0, "unit": "50/pack", "unitCost": 27.49, "itemNo": "B000F8XIP6"}, {"desc": "Duracell AA Batteries", "qty": 6.0, "unit": "24/pack", "unitCost": 21.75, "itemNo": "B0035LCFNQ"}, {"desc": "Duracell AAA Batteries", "qty": 8.0, "unit": "24/pack", "unitCost": 21.21, "itemNo": "B004K95PBQ"}, {"desc": "Flipside products presentation tri-fold", "qty": 2.0, "unit": "24/pack", "unitCost": 92.99, "itemNo": "B000F8XIP6"}, {"desc": "Post-It Sticky Easel Pad 25 x 30", "qty": 1.0, "unit": "4/pack", "unitCost": 69.9, "itemNo": "B000N4AI8M"}], "hasPO": false, "groupNote": "Ordered directly through Amazon \u2014 no PO number. Grouped by discipline from the budget worksheet color-coding. Item number shown is the Amazon ASIN."}, {"id": "amazon-appliedforensics", "vendor": "Amazon", "po": null, "discipline": "Applied/PhySci & Forensics", "setLabel": null, "deliverTo": null, "items": [{"desc": "EISCO Wire Test Tube Rack - Holds 40 Tubes with 18-20mm Diameter - Epoxy-Coated Steel", "qty": 10.0, "unit": 1.0, "unitCost": 17.68, "itemNo": "B00XAZ861M"}, {"desc": "CELOX Dish Brush with Soap Dispenser, Scrub Brush for Kitchen Cleaning", "qty": 1.0, "unit": 1.0, "unitCost": 9.99, "itemNo": "B0FPXCQMSG"}, {"desc": "Scotch-Brite Non-Scratch Dishwand Kit, Includes 1 Dish Wand & 7 Dish Wand Sponge Refills, Best for Nonstick Pots and Pans, Keep Hands Out of the Mess, Dish Cleaning Wand, Dish Soap Wand", "qty": 1.0, "unit": 1.0, "unitCost": 11.13, "itemNo": "B093J8R9S8"}, {"desc": "Dawn PRO Manual Pot and Pan Detergent, Dish Soap Liquid for Dishwashing by Hand, Bulk Concentrate for Commercial Use, 1 gal", "qty": 1.0, "unit": "1 Gal", "unitCost": 40.62, "itemNo": "B0CV9MCV9B"}, {"desc": "Smead Poly Expanding File Jacket, Straight-Cut Tab, 1\u201d Expansion, Letter Size, Assorted Colors, 10 per Pack (89610)", "qty": 2.0, "unit": 10.0, "unitCost": 10.66, "itemNo": "B006MGOYP8"}, {"desc": "1InTheOffice File Jacket Folders, Manila, Letter Size, Reinforced Straight-Cut Tab, 1\" Expansion, 50 Pack", "qty": 1.0, "unit": 50.0, "unitCost": 28.27, "itemNo": "B077V1HW8J"}, {"desc": "Lysol All Purpose Cleaner Spray, Multi-Purpose Disinfecting Spray, Kitchen & Bathroom Cleaner, Lemon Breeze, Lavender, & Mango Scents, 32oz (Pack of 4)", "qty": 4.0, "unit": 1.0, "unitCost": 3.97, "itemNo": "B00QIT9NDW"}, {"desc": "PerkHomy 36\" x 1,440\" (120') White Kraft Paper Roll for Craft Bulletin Board Paper Art Table Covering Crafting Gift Wrapping Bouquet Packing Parcel 80GSM 55LB (White, 36\" x 120')", "qty": 1.0, "unit": "36 x 1440", "unitCost": 33.99, "itemNo": "B0D8ZK12J8"}, {"desc": "AFMAT Electric Pencil Sharpener, Fully Automatic Pencil Sharpener for 7-11.5mm Colored/Jumbo Pencils, Auto in & Out, Rechargeable Hands-Free Pencil Sharpeners for Classroom Home Office PSX5, Gray", "qty": 1.0, "unit": 1.0, "unitCost": 31.49, "itemNo": "B0C8N6R5QY"}, {"desc": "16.5\" Large Digital Wall Clock with BT Sync, RGB Lights with 11 Scenes Mode Remote Control, Dual Alarms with Big LED Display, Auto DST, Temperature for Classroom Gaming", "qty": 1.0, "unit": 1.0, "unitCost": 30.99, "itemNo": "B0DP7GYKCW"}, {"desc": "Shuttle Art Colored Pencils Bulk, 408 Pack Coloring Pencil Set Plus 20 Sharpeners, 12 Assorted Colors, Classroom Pack School Supplies", "qty": 1.0, "unit": 408.0, "unitCost": 33.98, "itemNo": "B07WWYV3XN"}, {"desc": "Sharpie Permanent Markers Set Quick Drying And Fade Resistant Fine Point Marker For Wood Plastic Paper Metal And More Drawing Coloring And Poster Marker Black 12 Count", "qty": 1.0, "unit": 12.0, "unitCost": 2.98, "itemNo": "B0FPXQ3Z6P"}, {"desc": "Sharpie Metallic Permanent Markers, Fine Tip, Assorted Colors, 6 Count - Arts & Crafts, Quick Drying, Great for Dark Surfaces", "qty": 1.0, "unit": 6.0, "unitCost": 7.9, "itemNo": "B07DPLQJVN"}], "hasPO": false, "groupNote": "Ordered directly through Amazon \u2014 no PO number. Grouped by discipline from the budget worksheet color-coding. Item number shown is the Amazon ASIN."}, {"id": "amazon-unspecified", "vendor": "Amazon", "po": null, "discipline": null, "setLabel": null, "deliverTo": null, "items": [{"desc": "refrigerator", "qty": 1.0, "unit": "Each", "unitCost": 209.99, "itemNo": "B0CM5R97SV"}, {"desc": "Luminol", "qty": 1.0, "unit": 8.0, "unitCost": 55.0, "itemNo": "B08W6QGB8Y"}, {"desc": "Sutures", "qty": 1.0, "unit": "pk of 56", "unitCost": 15.99, "itemNo": "B0CXP15HSY"}, {"desc": "Red Wax Pencils", "qty": 2.0, "unit": "pk of 5", "unitCost": 12.99, "itemNo": "B0DQVT6KY6"}, {"desc": "Molding Gel", "qty": 1.0, "unit": 1.0, "unitCost": 49.39, "itemNo": "B000KVSU60"}, {"desc": "specimen vials", "qty": 1.0, "unit": "pk of 20", "unitCost": 14.99, "itemNo": "B07Q82RLBY"}, {"desc": "Soap", "qty": 2.0, "unit": "pk of 4", "unitCost": 9.88, "itemNo": "B079FV8QB9"}, {"desc": "Ziploc Gallon Food Storage Bags", "qty": 1.0, "unit": "each", "unitCost": 10.69, "itemNo": "B0DGN9C8QF"}, {"desc": "Revlon Compact Air Dryer", "qty": 1.0, "unit": "each", "unitCost": 10.02, "itemNo": "B003TQPRGY"}, {"desc": "Headband Magnifier with light", "qty": 2.0, "unit": "each", "unitCost": 23.99, "itemNo": "B0C2M5G54V"}, {"desc": "Bic Multi Use Lighters", "qty": 1.0, "unit": "each", "unitCost": 13.05, "itemNo": "B00GUQWAS8"}, {"desc": "36 in butcher paper dispenser", "qty": 1.0, "unit": "each", "unitCost": 54.99, "itemNo": "B0DNNSMZTM"}, {"desc": "6 oz plastic squeeze bottles", "qty": 1.0, "unit": "pk of 12", "unitCost": 16.49, "itemNo": "B09K67PGGQ"}, {"desc": "Stuffed Body Prop", "qty": 1.0, "unit": "each", "unitCost": 79.99, "itemNo": "B07FXR4368"}, {"desc": "Hot Plate", "qty": 2.0, "unit": "each", "unitCost": 19.99, "itemNo": "B00C8C5I7I"}, {"desc": "Black bic pens", "qty": 1.0, "unit": "pk of 36", "unitCost": 6.26, "itemNo": "B00347A8NK"}, {"desc": "Blue bic pens", "qty": 1.0, "unit": "pk of 60", "unitCost": 6.96, "itemNo": "B001Q4HUNO"}, {"desc": "Red bic pens", "qty": 1.0, "unit": "pk of 60", "unitCost": 12.59, "itemNo": "B00UM7VN7K"}, {"desc": "Pilot get roller pens blue", "qty": 1.0, "unit": "pk of 12", "unitCost": 13.48, "itemNo": "B00006JNJC"}, {"desc": "black felt tip pens", "qty": 1.0, "unit": "pk of 36", "unitCost": 13.99, "itemNo": "B0C89M9XQB"}], "hasPO": false, "groupNote": "Ordered through Amazon \u2014 no discipline was color-coded for these items on the worksheet. Please confirm which discipline these belong to. Item number shown is the Amazon ASIN."}, {"id": "pending-small-vendors", "vendor": "Educational Innovations / ID Technologies", "po": null, "discipline": null, "setLabel": null, "deliverTo": null, "items": [{"desc": "Heat Sensitive Paper, package of 40", "qty": 4, "unit": "PK", "unitCost": 20.99, "itemNo": "HEA-265"}, {"desc": "Lifting tape pad", "qty": 4, "unit": "EA", "unitCost": 6.6, "itemNo": "FS-TAPETP2"}], "hasPO": false, "groupNote": "No PO uploaded yet for these two small vendors. Quantities/pricing from the budget worksheet only \u2014 treat as unverified until a PO or packing slip arrives."}];
+
+const DISC_STYLE = {
+  'Biology':        {c:'var(--bio)',  bg:'var(--bio-bg)'},
+  'Chemistry':      {c:'var(--chem)', bg:'var(--chem-bg)'},
+  'Earth Science':  {c:'var(--earth)',bg:'var(--earth-bg)'},
+  'Physics':        {c:'var(--phys)', bg:'var(--phys-bg)'},
+  'Forensics':      {c:'var(--forensics)', bg:'var(--forensics-bg)'},
+  'Applied/PhySci & Forensics': {c:'var(--forensics)', bg:'var(--forensics-bg)'},
+  'Physics & Forensics': {c:'var(--multi)', bg:'var(--multi-bg)'},
+  null: {c:'var(--unspec)', bg:'var(--unspec-bg)'}
+};
+function discStyle(d){ return DISC_STYLE[d] || DISC_STYLE[null]; }
+function discLabel(d){ return d || 'Unspecified discipline'; }
+
+// ---------- state ----------
+let checkinState = {}; // groupId -> {items:{idx:{received,bo,note}}, }
+let currentScreen = {name:'home'};
+let mode = 'teacher'; // teacher | admin
+let adminFilter = {discipline:null, vendor:null, status:null};
+let searchQuery = '';
+let saveTimers = {};
+
+// ---------- Firebase Realtime Database (REST) ----------
+const FIREBASE_DB_URL = 'https://science-checkin-abd16-default-rtdb.firebaseio.com';
+
+async function fbGet(path){
+  const res = await fetch(FIREBASE_DB_URL + path + '.json');
+  if(!res.ok) throw new Error('Firebase GET failed: ' + res.status);
+  return res.json();
+}
+async function fbPut(path, data){
+  const res = await fetch(FIREBASE_DB_URL + path + '.json', {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  if(!res.ok) throw new Error('Firebase PUT failed: ' + res.status);
+  return res.json();
+}
+
+async function loadAllState(){
+  try{
+    const all = await fbGet('/checkin');
+    GROUPS.forEach(g=>{
+      checkinState[g.id] = (all && all[g.id]) ? all[g.id] : {items:{}};
+    });
+  }catch(e){
+    console.error('Could not load from Firebase, starting empty', e);
+    GROUPS.forEach(g=>{ checkinState[g.id] = {items:{}}; });
+  }
+}
+
+function scheduleSave(groupId){
+  clearTimeout(saveTimers[groupId]);
+  saveTimers[groupId] = setTimeout(async ()=>{
+    try{
+      await fbPut('/checkin/'+groupId, checkinState[groupId]);
+      flashSaved(groupId);
+    }catch(e){ console.error('save failed', e); }
+  }, 350);
+}
+function flashSaved(groupId){
+  const el = document.getElementById('saved-'+groupId);
+  if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),900); }
+}
+
+// Poll for changes from other devices every few seconds, but never while
+// someone is actively typing (so we don't yank focus out from under them).
+function startLiveSync(){
+  setInterval(async ()=>{
+    const active = document.activeElement;
+    const isTyping = active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA');
+    if(isTyping) return;
+    try{
+      const all = await fbGet('/checkin');
+      let changed = false;
+      GROUPS.forEach(g=>{
+        const fresh = (all && all[g.id]) ? all[g.id] : {items:{}};
+        if(JSON.stringify(fresh) !== JSON.stringify(checkinState[g.id])){
+          checkinState[g.id] = fresh;
+          changed = true;
+        }
+      });
+      if(changed) render();
+    }catch(e){ /* silent - keep using last known state */ }
+  }, 4000);
+}
+
+function getItemState(groupId, idx){
+  const gs = checkinState[groupId] || {items:{}};
+  return gs.items[idx] || {received:0, bo:false, note:''};
+}
+function setItemState(groupId, idx, patch){
+  if(!checkinState[groupId]) checkinState[groupId] = {items:{}};
+  const cur = getItemState(groupId, idx);
+  checkinState[groupId].items[idx] = Object.assign({}, cur, patch);
+  scheduleSave(groupId);
+}
+
+function itemStatus(groupId, idx, qty){
+  const st = getItemState(groupId, idx);
+  if(st.bo && st.received < qty) return 'backorder';
+  if(st.received >= qty && qty>0) return 'full';
+  if(st.received > 0) return 'partial';
+  return 'unchecked';
+}
+
+function groupProgress(g){
+  let full=0, partial=0, bo=0, unchecked=0;
+  g.items.forEach((it,idx)=>{
+    const s = itemStatus(g.id, idx, it.qty);
+    if(s==='full') full++; else if(s==='partial') partial++; else if(s==='backorder') bo++; else unchecked++;
+  });
+  const total = g.items.length;
+  let status = 'waiting';
+  if(full===total) status='payable';
+  else if(full>0 || partial>0 || bo>0) status='partial';
+  if(bo>0 && full<total) status='attention';
+  return {full,partial,bo,unchecked,total,status};
+}
+
+const STATUS_META = {
+  payable:  {label:'Payable',    c:'var(--green)', bg:'var(--green-bg)'},
+  partial:  {label:'Partial',    c:'var(--amber)', bg:'var(--amber-bg)'},
+  attention:{label:'Back-ordered items', c:'var(--red)', bg:'var(--red-bg)'},
+  waiting:  {label:'Not started',c:'var(--gray)',  bg:'var(--gray-bg)'}
+};
+
+// ---------- render ----------
+const root = document.getElementById('app');
+
+function render(){
+  root.innerHTML = '';
+  root.appendChild(renderTopbar());
+  const content = document.createElement('div');
+  content.className = 'content';
+  root.appendChild(content);
+
+  if(mode==='admin'){ content.appendChild(renderAdmin()); return; }
+
+  switch(currentScreen.name){
+    case 'home': content.appendChild(renderHome()); break;
+    case 'vendorList': content.appendChild(renderVendorList()); break;
+    case 'disciplineList': content.appendChild(renderDisciplineList()); break;
+    case 'itemBrowse': content.appendChild(renderItemBrowse()); break;
+    case 'groupsFor': content.appendChild(renderGroupsFor(currentScreen.mode, currentScreen.value)); break;
+    case 'checklist': content.appendChild(renderChecklist(currentScreen.groupId)); break;
+  }
+}
+
+function renderTopbar(){
+  const bar = document.createElement('div');
+  bar.className = 'topbar';
+  const showBack = mode==='teacher' && currentScreen.name!=='home';
+  bar.innerHTML = `
+    ${showBack ? '<button class="back" id="btn-back">&#8592;</button>' : ''}
+    <div class="title">Science Supply Check-In
+      <div class="sub">${topbarSub()}</div>
+    </div>
+    <div class="mode-toggle">
+      <button data-mode="teacher" class="${mode==='teacher'?'active':''}">Teacher</button>
+      <button data-mode="admin" class="${mode==='admin'?'active':''}">Admin</button>
+    </div>
+  `;
+  bar.querySelectorAll('.mode-toggle button').forEach(b=>{
+    b.onclick = ()=>{ mode=b.dataset.mode; if(mode==='teacher'){currentScreen={name:'home'};} render(); };
+  });
+  const backBtn = bar.querySelector('#btn-back');
+  if(backBtn) backBtn.onclick = goBack;
+  return bar;
+}
+
+function topbarSub(){
+  if(mode==='admin') return 'Admin dashboard \u2014 .410 General Supplies';
+  if(currentScreen.name==='home') return 'Fremd HS Science \u00b7 tap a box to check it in';
+  if(currentScreen.name==='vendorList') return 'Choose the vendor on your packing slip';
+  if(currentScreen.name==='disciplineList') return 'Choose a discipline';
+  if(currentScreen.name==='itemBrowse') return 'Search for the item you\u2019re holding';
+  if(currentScreen.name==='groupsFor') return currentScreen.value;
+  if(currentScreen.name==='checklist'){
+    const g = GROUPS.find(x=>x.id===currentScreen.groupId);
+    return g ? g.vendor : '';
+  }
+  return '';
+}
+
+function goBack(){
+  if(currentScreen.name==='checklist'){
+    if(currentScreen.from) currentScreen = currentScreen.from;
+    else currentScreen = {name:'home'};
+  } else if(currentScreen.name==='groupsFor'){
+    currentScreen = {name: currentScreen.mode==='vendor' ? 'vendorList' : 'disciplineList'};
+  } else {
+    currentScreen = {name:'home'};
+  }
+  render();
+}
+
+function renderHome(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="hero">
+      <h1>Check in a delivery</h1>
+      <p>Pick whichever you know \u2014 the vendor on the box, the discipline it belongs to, or just the item itself \u2014 then mark off what arrived. Everything saves automatically and Karl can see it live.</p>
+    </div>
+    <div class="path-cards">
+      <div class="path-card" id="path-vendor">
+        <div class="icon">&#128230;</div>
+        <div class="txt"><h3>Browse by vendor</h3><p>I have a packing slip (Flinn, Carolina, Amazon...)</p></div>
+      </div>
+      <div class="path-card" id="path-discipline">
+        <div class="icon">&#129514;</div>
+        <div class="txt"><h3>Browse by discipline</h3><p>I know it's Biology, Chemistry, Physics...</p></div>
+      </div>
+      <div class="path-card" id="path-item">
+        <div class="icon">&#128269;</div>
+        <div class="txt"><h3>Browse by item</h3><p>I know the item (e.g. "250mL beaker") but not the vendor or discipline</p></div>
+      </div>
+    </div>
+  `;
+  wrap.querySelector('#path-vendor').onclick = ()=>{ currentScreen={name:'vendorList'}; render(); };
+  wrap.querySelector('#path-discipline').onclick = ()=>{ currentScreen={name:'disciplineList'}; render(); };
+  wrap.querySelector('#path-item').onclick = ()=>{ currentScreen={name:'itemBrowse'}; render(); };
+  return wrap;
+}
+
+function renderItemBrowse(){
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="section-label">Search for the item</div>
+    <div class="search-wrap">
+      <input class="search-input" id="search-box" type="text" placeholder="e.g. beaker, gloves, sodium hydroxide..." value="${escapeHtml(searchQuery)}">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  `;
+  const searchBox = wrap.querySelector('#search-box');
+  searchBox.oninput = (e)=>{ searchQuery = e.target.value; renderSearchResults(wrap.querySelector('#search-results')); };
+  setTimeout(()=>searchBox.focus(), 50);
+  renderSearchResults(wrap.querySelector('#search-results'));
+  return wrap;
+}
+
+function renderSearchResults(container){
+  container.innerHTML = '';
+  const q = searchQuery.trim().toLowerCase();
+  if(q.length < 2) return;
+  const hits = [];
+  GROUPS.forEach(g=>{
+    g.items.forEach((it,idx)=>{
+      if(matchesQuery(it, q)){
+        hits.push({g, it, idx});
+      }
+    });
+  });
+  if(hits.length===0){
+    container.innerHTML = '<div class="empty-state" style="padding:16px;">No items matched.</div>';
+    return;
+  }
+  hits.slice(0,25).forEach(h=>{
+    const div = document.createElement('div');
+    div.className = 'search-hit';
+    const st = discStyle(h.g.discipline);
+    div.innerHTML = `<div class="h-desc">${escapeHtml(h.it.desc)}${itemNoTag(h.it)}</div>
+      <div class="h-meta">${escapeHtml(h.g.vendor)}${h.g.po ? ' \u00b7 PO '+escapeHtml(h.g.po):' \u00b7 no PO'}${h.g.setLabel? ' \u00b7 '+escapeHtml(h.g.setLabel):''}</div>
+      <div style="margin-top:6px;"><span class="disc-chip" style="background:${st.bg};color:${st.c}"><span class="disc-dot" style="background:${st.c}"></span>Goes in: ${escapeHtml(discLabel(h.g.discipline))}</span></div>`;
+    div.onclick = ()=>{ currentScreen = {name:'checklist', groupId:h.g.id, from:{name:'itemBrowse'}, highlightIdx:h.idx}; render(); };
+    container.appendChild(div);
+  });
+}
+
+function renderVendorList(){
+  const wrap = document.createElement('div');
+  const vendors = [...new Set(GROUPS.map(g=>g.vendor))].sort();
+  let html = '<div class="section-label">Vendors</div><div class="grid-list">';
+  vendors.forEach(v=>{
+    const groupsForV = GROUPS.filter(g=>g.vendor===v);
+    const itemCount = groupsForV.reduce((a,g)=>a+g.items.length,0);
+    html += `<div class="list-btn" data-v="${escapeAttr(v)}">
+      <div><div class="lb-main">${escapeHtml(v)}</div><div class="lb-sub">${groupsForV.length} ${groupsForV.length===1?'group':'groups'} \u00b7 ${itemCount} items</div></div>
+      <div class="chev">&#8250;</div></div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.list-btn').forEach(b=>{
+    b.onclick = ()=>{
+      const v = b.dataset.v;
+      const groupsForV = GROUPS.filter(g=>g.vendor===v);
+      if(groupsForV.length===1){
+        currentScreen = {name:'checklist', groupId:groupsForV[0].id, from:{name:'vendorList'}};
+      } else {
+        currentScreen = {name:'groupsFor', mode:'vendor', value:v};
+      }
+      render();
+    };
+  });
+  return wrap;
+}
+
+function renderDisciplineList(){
+  const wrap = document.createElement('div');
+  const discSet = [...new Set(GROUPS.map(g=>g.discipline))];
+  const order = ['Biology','Chemistry','Earth Science','Physics','Forensics','Applied/PhySci & Forensics','Physics & Forensics', null];
+  discSet.sort((a,b)=> order.indexOf(a)-order.indexOf(b));
+  let html = '<div class="section-label">Disciplines</div><div class="grid-list">';
+  discSet.forEach(d=>{
+    const groupsForD = GROUPS.filter(g=>g.discipline===d);
+    const itemCount = groupsForD.reduce((a,g)=>a+g.items.length,0);
+    const st = discStyle(d);
+    html += `<div class="list-btn" data-d="${d===null?'':escapeAttr(d)}">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="disc-dot" style="background:${st.c};width:14px;height:14px;"></span>
+        <div><div class="lb-main">${escapeHtml(discLabel(d))}</div><div class="lb-sub">${groupsForD.length} ${groupsForD.length===1?'group':'groups'} \u00b7 ${itemCount} items</div></div>
+      </div>
+      <div class="chev">&#8250;</div></div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.list-btn').forEach(b=>{
+    b.onclick = ()=>{
+      const d = b.dataset.d === '' ? null : b.dataset.d;
+      const groupsForD = GROUPS.filter(g=>g.discipline===d);
+      if(groupsForD.length===1){
+        currentScreen = {name:'checklist', groupId:groupsForD[0].id, from:{name:'disciplineList'}};
+      } else {
+        currentScreen = {name:'groupsFor', mode:'discipline', value: d===null? 'Unspecified discipline' : d, discValue:d};
+      }
+      render();
+    };
+  });
+  return wrap;
+}
+
+function renderGroupsFor(kind, value){
+  const wrap = document.createElement('div');
+  let groupsForX;
+  if(kind==='vendor'){
+    groupsForX = GROUPS.filter(g=>g.vendor===value);
+  } else {
+    const dv = currentScreen.discValue;
+    groupsForX = GROUPS.filter(g=>g.discipline === (dv===undefined? value : dv));
+  }
+
+  const header = document.createElement('div');
+  header.style.margin = '22px 0 12px';
+  header.innerHTML = `<div class="section-label" style="margin:0 0 10px;">${escapeHtml(value)}</div>
+    <input class="search-input" id="vendor-item-search" type="text" placeholder="Search items in ${escapeAttr(value)}... (e.g. beaker, gloves)" value="${escapeHtml(currentScreen.query||'')}">`;
+  wrap.appendChild(header);
+
+  const toggleRow = document.createElement('div');
+  toggleRow.style.display = 'flex';
+  toggleRow.style.justifyContent = 'flex-end';
+  toggleRow.style.margin = '10px 0 12px';
+  wrap.appendChild(toggleRow);
+
+  const resultsDiv = document.createElement('div');
+  resultsDiv.id = 'groupsfor-results';
+  wrap.appendChild(resultsDiv);
+
+  function renderToggle(){
+    const expanded = !!currentScreen.expanded;
+    const q = (currentScreen.query||'').trim();
+    if(q.length>0){ toggleRow.innerHTML=''; return; } // searching implies flat view, hide toggle
+    toggleRow.innerHTML = `<button class="filter-chip ${expanded?'active':''}" id="expand-toggle">${expanded? '\u2716 Collapse':'\u2295 Expand all'}</button>`;
+    toggleRow.querySelector('#expand-toggle').onclick = ()=>{
+      currentScreen.expanded = !currentScreen.expanded;
+      renderToggle();
+      renderResults();
+    };
+  }
+
+  function renderResults(){
+    resultsDiv.innerHTML = '';
+    const q = (currentScreen.query||'').trim().toLowerCase();
+    const expanded = !!currentScreen.expanded || q.length>0;
+
+    if(!expanded){
+      let html = '';
+      groupsForX.forEach(g=>{
+        const prog = groupProgress(g);
+        const meta = STATUS_META[prog.status];
+        const st = discStyle(g.discipline);
+        html += `<div class="group-card" data-id="${g.id}">
+          <div class="gc-top">
+            <div>
+              <div class="gc-vendor">${escapeHtml(g.vendor)}${g.setLabel? ' \u00b7 '+escapeHtml(g.setLabel):''}</div>
+              <div class="gc-meta">${g.po? 'PO '+escapeHtml(g.po) : 'No PO'} ${g.discipline? '\u00b7 <span class="disc-chip" style="background:'+st.bg+';color:'+st.c+'"><span class="disc-dot" style="background:'+st.c+'"></span>'+escapeHtml(g.discipline)+'</span>' : ''}</div>
+            </div>
+            <span class="status-pill" style="background:${meta.bg};color:${meta.c}">${meta.label}</span>
+          </div>
+          <div class="gc-progress"><div class="gc-progress-fill" style="width:${prog.total? (prog.full/prog.total*100):0}%"></div></div>
+          <div class="gc-meta" style="margin-top:6px;">${prog.full} of ${prog.total} items received in full</div>
+        </div>`;
+      });
+      resultsDiv.innerHTML = html;
+      resultsDiv.querySelectorAll('.group-card').forEach(c=>{
+        c.onclick = ()=>{
+          currentScreen = {name:'checklist', groupId:c.dataset.id, from:{name:'groupsFor', mode:kind, value:value, discValue: currentScreen.discValue, expanded: currentScreen.expanded}};
+          render();
+        };
+      });
+      return;
+    }
+
+    // expanded (or searching) flat view, grouped under each PO's mini header
+    if(q.length>0){
+      const hint = document.createElement('div');
+      hint.className = 'group-note';
+      const matchCount = groupsForX.reduce((a,g)=>a+g.items.filter(it=>matchesQuery(it,q)).length,0);
+      hint.textContent = matchCount + ' item' + (matchCount===1?'':'s') + ' match "' + currentScreen.query.trim() + '"';
+      resultsDiv.appendChild(hint);
+    } else {
+      const hint = document.createElement('div');
+      hint.className = 'group-note';
+      hint.textContent = 'Every PO for ' + value + ' in one list \u2014 find the item, check it in, and put it in the discipline shown.';
+      resultsDiv.appendChild(hint);
+    }
+
+    let anyMatch = false;
+    groupsForX.forEach(g=>{
+      const matchingIdxs = [];
+      g.items.forEach((it,idx)=>{ if(q.length===0 || matchesQuery(it,q)) matchingIdxs.push(idx); });
+      if(matchingIdxs.length===0) return;
+      anyMatch = true;
+      const section = document.createElement('div');
+      section.style.marginTop = '18px';
+      const prog = groupProgress(g);
+      const meta = STATUS_META[prog.status];
+      const st = discStyle(g.discipline);
+      const subHeader = document.createElement('div');
+      subHeader.className = 'group-card';
+      subHeader.style.cursor = 'default';
+      subHeader.innerHTML = `<div class="gc-top">
+          <div>
+            <div class="gc-vendor">${escapeHtml(g.vendor)}${g.setLabel? ' \u00b7 '+escapeHtml(g.setLabel):''}</div>
+            <div class="gc-meta">${g.po? 'PO '+escapeHtml(g.po) : 'No PO'} ${g.discipline? '\u00b7 <span class="disc-chip" style="background:'+st.bg+';color:'+st.c+'"><span class="disc-dot" style="background:'+st.c+'"></span>Goes in: '+escapeHtml(g.discipline)+'</span>' : '\u00b7 <span class="disc-chip" style="background:var(--unspec-bg);color:var(--unspec)">Unspecified discipline</span>'}</div>
+          </div>
+          <span class="status-pill" style="background:${meta.bg};color:${meta.c}">${meta.label}</span>
+        </div>
+        <div class="gc-progress"><div class="gc-progress-fill" style="width:${prog.total? (prog.full/prog.total*100):0}%"></div></div>`;
+      section.appendChild(subHeader);
+      const itemsDiv = document.createElement('div');
+      itemsDiv.style.marginTop = '8px';
+      matchingIdxs.forEach(idx=>{
+        const row = buildItemRow(g, idx, { onChange: ()=>updateGroupCardInPlace(g, subHeader) });
+        itemsDiv.appendChild(row);
+      });
+      section.appendChild(itemsDiv);
+      resultsDiv.appendChild(section);
+    });
+    if(q.length>0 && !anyMatch){
+      resultsDiv.innerHTML += '<div class="empty-state">No items matched. Try a different word.</div>';
+    }
+  }
+
+  const searchBox = header.querySelector('#vendor-item-search');
+  searchBox.oninput = (e)=>{
+    currentScreen.query = e.target.value;
+    renderToggle();
+    renderResults();
+  };
+
+  renderToggle();
+  renderResults();
+  return wrap;
+}
+
+function updateGroupCardInPlace(g, cardEl){
+  const prog = groupProgress(g);
+  const meta = STATUS_META[prog.status];
+  const pill = cardEl.querySelector('.status-pill');
+  if(pill){ pill.style.background = meta.bg; pill.style.color = meta.c; pill.textContent = meta.label; }
+  const fill = cardEl.querySelector('.gc-progress-fill');
+  if(fill){ fill.style.width = (prog.total? (prog.full/prog.total*100):0)+'%'; }
+}
+
+function buildItemRow(g, idx, opts){
+  opts = opts || {};
+  const it = g.items[idx];
+  const state = getItemState(g.id, idx);
+  const status = itemStatus(g.id, idx, it.qty);
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.dataset.idx = idx;
+  const rowUid = g.id+'-'+idx;
+  row.innerHTML = `
+      <div class="item-top">
+        <div class="item-desc">${escapeHtml(it.desc)}${itemNoTag(it)}</div>
+        <div class="item-qty">${it.qty} ${escapeHtml(it.unit||'')}</div>
+      </div>
+      <div class="item-controls">
+        <button class="qbtn qbtn-full ${status==='full'?'on-full':''}" data-action="full">&#10003; Received all</button>
+        <button class="qbtn qbtn-partial ${status==='partial'?'on-partial':''}" data-action="partial">&plusmn; Partial</button>
+        <button class="qbtn qbtn-bo ${status==='backorder'?'on-bo':''}" data-action="bo">&#8987; Back-order</button>
+      </div>
+      <div class="partial-row" style="display:${status==='partial'?'flex':'none'};">
+        <div class="partial-input-wrap">
+          <label>Qty received:</label>
+          <input type="number" min="0" class="partial-input" value="${state.received||0}">
+        </div>
+      </div>
+      <button class="note-toggle" data-action="note-toggle">${state.note? 'Edit note':'+ Add note'}</button>
+      <div class="note-wrap" style="display:${state.note? 'block':'none'};">
+        <textarea class="note-input" rows="2" placeholder="e.g. box damaged, wrong item substituted...">${escapeHtml(state.note||'')}</textarea>
+      </div>
+      <span class="saved-check">Saved</span>
+  `;
+  const fullBtn = row.querySelector('.qbtn-full');
+  const partialBtn = row.querySelector('.qbtn-partial');
+  const boBtn = row.querySelector('.qbtn-bo');
+  const partialRow = row.querySelector('.partial-row');
+  const partialInput = row.querySelector('.partial-input');
+  const noteToggle = row.querySelector('[data-action="note-toggle"]');
+  const noteWrap = row.querySelector('.note-wrap');
+  const noteInput = row.querySelector('.note-input');
+  const savedFlag = row.querySelector('.saved-check');
+
+  let partialVisible = (itemStatus(g.id, idx, it.qty) === 'partial');
+
+  function refreshButtonHighlights(){
+    const s = itemStatus(g.id, idx, it.qty);
+    fullBtn.classList.toggle('on-full', s==='full');
+    partialBtn.classList.toggle('on-partial', s==='partial');
+    boBtn.classList.toggle('on-bo', s==='backorder');
+  }
+  function setPartialVisible(v){
+    partialVisible = v;
+    partialRow.style.display = v ? 'flex' : 'none';
+  }
+  function flashLocal(){
+    savedFlag.classList.add('show'); setTimeout(()=>savedFlag.classList.remove('show'), 900);
+  }
+  function afterChange(){
+    refreshButtonHighlights();
+    if(opts.onChange) opts.onChange();
+    flashLocal();
+  }
+
+  fullBtn.onclick = ()=>{
+    setItemState(g.id, idx, {received: it.qty, bo:false});
+    setPartialVisible(false);
+    afterChange();
+  };
+  partialBtn.onclick = ()=>{
+    const cur = getItemState(g.id, idx);
+    const hasExistingPartial = cur.received>0 && cur.received<it.qty;
+    const startVal = hasExistingPartial ? cur.received : '';
+    setItemState(g.id, idx, {received: hasExistingPartial ? cur.received : 0, bo:false});
+    partialInput.value = startVal;
+    setPartialVisible(true);
+    afterChange();
+    partialInput.focus();
+    partialInput.select();
+  };
+  boBtn.onclick = ()=>{
+    const cur = getItemState(g.id, idx);
+    setItemState(g.id, idx, {bo: !cur.bo});
+    afterChange();
+  };
+  partialInput.oninput = ()=>{
+    // While the person is actively editing this field, keep it visible no
+    // matter what the in-progress number is (even 0 or blank mid-edit) -
+    // only the explicit buttons above should show/hide this row.
+    const raw = partialInput.value;
+    let v = parseFloat(raw);
+    if(isNaN(v) || v<0) v=0;
+    setItemState(g.id, idx, {received:v});
+    afterChange();
+  };
+  noteToggle.onclick = ()=>{
+    const showing = noteWrap.style.display==='block';
+    noteWrap.style.display = showing? 'none':'block';
+    if(!showing) noteInput.focus();
+  };
+  noteInput.oninput = ()=>{
+    setItemState(g.id, idx, {note: noteInput.value});
+    noteToggle.textContent = noteInput.value ? 'Edit note' : '+ Add note';
+    flashLocal();
+  };
+  return row;
+}
+
+function renderChecklist(groupId){
+  const g = GROUPS.find(x=>x.id===groupId);
+  const wrap = document.createElement('div');
+  if(!g){ wrap.innerHTML = '<div class="empty-state">Group not found.</div>'; return wrap; }
+  const prog = groupProgress(g);
+  const meta = STATUS_META[prog.status];
+  const st = discStyle(g.discipline);
+
+  let html = `<div class="rollup-banner">
+    <div class="rollup-top">
+      <h2>${escapeHtml(g.vendor)}${g.setLabel? ' \u2014 '+escapeHtml(g.setLabel):''}</h2>
+      <span class="status-pill" style="background:${meta.bg};color:${meta.c}">${meta.label}</span>
+    </div>
+    <div class="rollup-meta">
+      ${g.po? '<strong>PO '+escapeHtml(g.po)+'</strong> \u00b7 ' : '<strong>No PO number</strong> \u00b7 '}
+      ${g.discipline? '<span class="disc-chip" style="background:'+st.bg+';color:'+st.c+'"><span class="disc-dot" style="background:'+st.c+'"></span>'+escapeHtml(g.discipline)+'</span>' : '<span class="disc-chip" style="background:var(--unspec-bg);color:var(--unspec)">Unspecified discipline</span>'}
+      ${g.deliverTo? '<br>Deliver to: '+escapeHtml(g.deliverTo) : ''}
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${prog.total?(prog.full/prog.total*100):0}%"></div></div>
+    <div class="progress-text">${prog.full} received in full &middot; ${prog.partial} partial &middot; ${prog.bo} back-ordered &middot; ${prog.unchecked} not checked (of ${prog.total})</div>
+  </div>`;
+
+  if(g.groupNote){
+    html += `<div class="group-note">${escapeHtml(g.groupNote)}</div>`;
+  }
+
+  html += '<div class="items" id="items-container"></div>';
+  wrap.innerHTML = html;
+
+  const itemsContainer = wrap.querySelector('#items-container');
+  g.items.forEach((it, idx)=>{
+    const row = buildItemRow(g, idx, { onChange: ()=>updateBannerInPlace(g, wrap) });
+    itemsContainer.appendChild(row);
+  });
+
+  if(currentScreen.highlightIdx !== undefined && currentScreen.highlightIdx !== null){
+    const targetIdx = currentScreen.highlightIdx;
+    setTimeout(()=>{
+      const targetRow = wrap.querySelector(`.item-row[data-idx="${targetIdx}"]`);
+      if(targetRow){
+        targetRow.classList.add('highlight-target');
+        targetRow.scrollIntoView({behavior:'smooth', block:'center'});
+        setTimeout(()=>targetRow.classList.remove('highlight-target'), 3300);
+      }
+    }, 80);
+    currentScreen.highlightIdx = null; // only highlight once per navigation
+  }
+
+  return wrap;
+}
+
+function updateBannerInPlace(g, wrap){
+  const prog = groupProgress(g);
+  const meta = STATUS_META[prog.status];
+  const banner = wrap.querySelector('.rollup-banner');
+  if(!banner) return;
+  const pill = banner.querySelector('.status-pill');
+  pill.style.background = meta.bg; pill.style.color = meta.c; pill.textContent = meta.label;
+  const fill = banner.querySelector('.progress-fill');
+  fill.style.width = (prog.total? (prog.full/prog.total*100):0)+'%';
+  const progText = banner.querySelector('.progress-text');
+  progText.textContent = `${prog.full} received in full \u00b7 ${prog.partial} partial \u00b7 ${prog.bo} back-ordered \u00b7 ${prog.unchecked} not checked (of ${prog.total})`;
+}
+
+// ---------- admin ----------
+function renderAdmin(){
+  const wrap = document.createElement('div');
+  const relevantGroups = GROUPS.filter(g=>g.id!=='imiller-capital');
+  const totals = {payable:0, partial:0, attention:0, waiting:0};
+  relevantGroups.forEach(g=>{ totals[groupProgress(g).status]++; });
+
+  let html = `<div class="admin-summary">
+    <div class="summary-card"><div class="num" style="color:var(--green)">${totals.payable}</div><div class="lbl">Payable</div></div>
+    <div class="summary-card"><div class="num" style="color:var(--amber)">${totals.partial}</div><div class="lbl">Partial</div></div>
+    <div class="summary-card"><div class="num" style="color:var(--gray)">${totals.waiting}</div><div class="lbl">Not started</div></div>
+  </div>`;
+  if(totals.attention>0){
+    html += `<div class="group-note" style="background:var(--red-bg);border-color:#eec4bd;color:#7a2c20;">${totals.attention} PO group(s) have items flagged back-ordered.</div>`;
+  }
+
+  // filters
+  const disciplines = [...new Set(GROUPS.map(g=>g.discipline))];
+  const order = ['Biology','Chemistry','Earth Science','Physics','Forensics','Applied/PhySci & Forensics','Physics & Forensics', null];
+  disciplines.sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+
+  html += '<div class="filter-row" id="filter-disc"><div class="filter-chip ' + (adminFilter.discipline===null?'active':'') + '" data-d="">All disciplines</div>';
+  disciplines.forEach(d=>{
+    html += `<div class="filter-chip ${adminFilter.discipline===d?'active':''}" data-d="${d===null?'__null__':escapeAttr(d)}">${escapeHtml(discLabel(d))}</div>`;
+  });
+  html += '</div>';
+
+  html += '<div class="filter-row" id="filter-status"><div class="filter-chip ' + (adminFilter.status===null?'active':'') + '" data-s="">All statuses</div>';
+  ['payable','partial','attention','waiting'].forEach(s=>{
+    html += `<div class="filter-chip ${adminFilter.status===s?'active':''}" data-s="${s}">${STATUS_META[s].label}</div>`;
+  });
+  html += '</div>';
+
+  html += '<div id="admin-list"></div>';
+
+  wrap.innerHTML = html;
+
+  wrap.querySelector('#filter-disc').querySelectorAll('.filter-chip').forEach(chip=>{
+    chip.onclick = ()=>{
+      const v = chip.dataset.d;
+      adminFilter.discipline = v===''? null : (v==='__null__'? null : v);
+      if(v==='') adminFilter.discipline = null;
+      else if(v==='__null__') adminFilter.discipline = '__null__marker__';
+      else adminFilter.discipline = v;
+      render();
+    };
+  });
+  wrap.querySelector('#filter-status').querySelectorAll('.filter-chip').forEach(chip=>{
+    chip.onclick = ()=>{
+      const v = chip.dataset.s;
+      adminFilter.status = v===''? null : v;
+      render();
+    };
+  });
+
+  renderAdminList(wrap.querySelector('#admin-list'), relevantGroups);
+
+  // capital section
+  const capGroup = GROUPS.find(g=>g.id==='imiller-capital');
+  if(capGroup){
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="section-label">Other budget lines (excluded above)</div>`;
+    const prog = groupProgress(capGroup);
+    const meta = STATUS_META[prog.status];
+    div.innerHTML += `<div class="group-card" data-id="${capGroup.id}">
+      <div class="gc-top">
+        <div><div class="gc-vendor">${escapeHtml(capGroup.vendor)}</div>
+        <div class="gc-meta">PO ${escapeHtml(capGroup.po)} \u00b7 ${escapeHtml(capGroup.deliverTo)}</div></div>
+        <span class="status-pill" style="background:${meta.bg};color:${meta.c}">${meta.label}</span>
+      </div>
+    </div>`;
+    div.querySelector('.group-card').onclick = ()=>{
+      mode='teacher';
+      currentScreen = {name:'checklist', groupId:capGroup.id, from:{name:'home'}};
+      render();
+    };
+    wrap.appendChild(div);
+  }
+
+  return wrap;
+}
+
+function renderAdminList(container, groups){
+  let filtered = groups.filter(g=>{
+    if(adminFilter.discipline==='__null__marker__' && g.discipline!==null) return false;
+    if(adminFilter.discipline && adminFilter.discipline!=='__null__marker__' && g.discipline!==adminFilter.discipline) return false;
+    if(adminFilter.status && groupProgress(g).status!==adminFilter.status) return false;
+    return true;
+  });
+  if(filtered.length===0){
+    container.innerHTML = '<div class="empty-state">No PO groups match these filters.</div>';
+    return;
+  }
+  let html = '';
+  filtered.forEach(g=>{
+    const prog = groupProgress(g);
+    const meta = STATUS_META[prog.status];
+    const st = discStyle(g.discipline);
+    const total$ = g.items.reduce((a,it)=>a+it.qty*it.unitCost,0);
+    html += `<div class="group-card" data-id="${g.id}">
+      <div class="gc-top">
+        <div>
+          <div class="gc-vendor">${escapeHtml(g.vendor)}${g.setLabel? ' \u00b7 '+escapeHtml(g.setLabel):''}</div>
+          <div class="gc-meta">${g.po? 'PO '+escapeHtml(g.po): 'No PO'} \u00b7 $${total$.toFixed(2)} ${g.discipline!==undefined? '\u00b7 <span class="disc-chip" style="background:'+st.bg+';color:'+st.c+'"><span class="disc-dot" style="background:'+st.c+'"></span>'+escapeHtml(discLabel(g.discipline))+'</span>':''}</div>
+        </div>
+        <span class="status-pill" style="background:${meta.bg};color:${meta.c}">${meta.label}</span>
+      </div>
+      <div class="gc-progress"><div class="gc-progress-fill" style="width:${prog.total?(prog.full/prog.total*100):0}%;${prog.bo>0?'background:var(--red);':''}"></div></div>
+      <div class="gc-meta" style="margin-top:6px;">${prog.full}/${prog.total} received${prog.bo>0? ' \u00b7 '+prog.bo+' back-ordered':''}${prog.partial>0? ' \u00b7 '+prog.partial+' partial':''}</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.group-card').forEach(c=>{
+    c.onclick = ()=>{
+      mode='teacher';
+      currentScreen = {name:'checklist', groupId:c.dataset.id, from:{name:'home'}};
+      render();
+    };
+  });
+}
+
+function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(s){ return escapeHtml(s); }
+function matchesQuery(it, q){
+  if(!q) return true;
+  const hay = (it.desc + ' ' + (it.itemNo||'')).toLowerCase();
+  return hay.includes(q);
+}
+function itemNoTag(it){
+  return it.itemNo ? `<span class="item-no">${escapeHtml(it.itemNo)}</span>` : '';
+}
+
+// ---------- init ----------
+(async function init(){
+  root.innerHTML = '<div class="content" style="padding-top:60px;text-align:center;color:#8a8f9c;">Loading check-in data...</div>';
+  await loadAllState();
+  render();
+  startLiveSync();
+})();
+</script>
+</body>
+</html>
