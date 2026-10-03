@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Beyond the Worksheet · AI Prompt Builder</title>
+<meta name="description" content="Build a working science simulation for your own lab in about twenty minutes, without writing code. A prompt builder and starter prompts from William Fremd High School, District 211.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Beyond the Worksheet · AI Prompt Builder">
+<meta property="og:description" content="Build a working science simulation for your own lab in about twenty minutes, without writing code.">
+<meta name="theme-color" content="#036A38">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23036A38'/%3E%3Cpath d='M24 14h16v4h-3v12l11 18a4 4 0 0 1-3.4 6H19.4a4 4 0 0 1-3.4-6l11-18V18h-3z' fill='%23fff'/%3E%3Cpath d='M21 42h22l3.5 6h-29z' fill='%23F5A81C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root{
+    /* Fremd green #036A38 / gold #F5A81C; District 211 maroon #8B1D41 / grey-brown #746762 */
+    color-scheme:light;
+    --paper:#FCFDFB;
+    --surface:#FFFFFF;
+    --surface-2:#F1F7F2;
+    --ink:#111A14;
+    --muted:#665A55;
+    --line:#DCE6DC;
+    --accent:#036A38;
+    --accent-soft:#EAF8EF;
+    --gold:#F5A81C;
+    --warn:#8B1D41;
+    --shadow:0 1px 2px rgba(17,26,20,.05),0 10px 30px -20px rgba(17,26,20,.30);
+    --radius:12px;
+    --on-accent:#FFFFFF;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --paper:#1A3329; --surface:#234437; --surface-2:#2C5243;
+      --ink:#F2FAF4; --muted:#BFD3C6; --line:#3F6654;
+      --accent:#7EDCB1; --accent-soft:#2B5544; --gold:#FFC24D; --warn:#FFB3C4;
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px -20px rgba(0,0,0,.8);
+      --on-accent:#06130D;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#1A3329; --surface:#234437; --surface-2:#2C5243;
+    --ink:#F2FAF4; --muted:#BFD3C6; --line:#3F6654;
+    --accent:#7EDCB1; --accent-soft:#2B5544; --gold:#FFC24D; --warn:#FFB3C4;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px -20px rgba(0,0,0,.8);
+    --on-accent:#06130D;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+    font-size:16px;line-height:1.6;
+    padding:env(safe-area-inset-top,0px) max(20px,env(safe-area-inset-right,0px)) calc(80px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  h1,h2,h3{font-family:Archivo,ui-sans-serif,system-ui,sans-serif;text-wrap:balance;margin:0;line-height:1.15}
+  p{margin:0}
+  a{color:var(--accent)}
+  a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,[contenteditable]:focus-visible{
+    outline:2px solid var(--accent);outline-offset:3px;border-radius:5px}
+  .eyebrow{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  }
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* ---------- masthead ---------- */
+  header.mast{padding-block:40px 30px;margin-bottom:44px;border-bottom:1px solid var(--line)}
+  .mast-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .mast h1{font-size:clamp(34px,6.5vw,56px);font-weight:800;letter-spacing:-.03em;margin:10px 0 14px}
+  .mast .sub{font-size:clamp(17px,2.4vw,20px);color:var(--muted);max-width:40ch}
+  .mast .who{
+    font-family:Archivo,sans-serif;font-size:13px;font-weight:600;color:var(--accent);
+    margin-top:22px;padding-top:12px;border-top:3px solid var(--gold);display:inline-block;
+  }
+  .mast .who span{color:var(--warn)}
+
+  /* ---------- buttons ---------- */
+  button{font:inherit}
+  .btn{
+    font-family:Archivo,sans-serif;font-size:13px;font-weight:600;
+    background:var(--accent);color:var(--on-accent);border:1px solid var(--accent);border-radius:7px;
+    padding:8px 16px;min-height:38px;cursor:pointer;flex:none;
+  }
+  .btn:hover{filter:brightness(1.08)}
+  .btn.done{background:var(--gold);border-color:var(--gold);color:#1A1400}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{background:var(--surface-2);filter:none}
+  .btn.ghost[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+  .theme-btn{display:inline-flex;align-items:center;gap:7px}
+  .theme-btn svg{width:15px;height:15px}
+
+  /* ---------- builder ---------- */
+  .builder{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;margin-bottom:56px;
+  }
+  .builder-top{padding:26px 26px 0;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+  .builder h2{font-size:23px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+  .builder .hint{color:var(--muted);font-size:14.5px;margin-top:6px}
+  .builder-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:24px 26px 8px}
+  .field{display:flex;flex-direction:column;gap:7px;min-width:0}
+  .field.full{grid-column:1/-1}
+  .field label,.label{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .field input,.field select{
+    /* 16px keeps iPad/iPhone Safari from zooming in on focus */
+    font:inherit;font-size:16px;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line);border-radius:7px;padding:10px 12px;width:100%;min-height:44px;
+  }
+  .field input::placeholder{color:var(--muted);opacity:.75}
+  .field select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
+  .toggles{display:flex;flex-wrap:wrap;gap:8px;padding:14px 26px 24px}
+  .toggle{
+    display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface);border-radius:999px;
+    padding:8px 14px 8px 11px;font-size:13.5px;user-select:none;-webkit-user-select:none;
+  }
+  .toggle input{accent-color:var(--accent);margin:0;width:15px;height:15px}
+  .toggle:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+  .toggle:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+
+  .out{border-top:1px solid var(--line);background:var(--surface-2)}
+  .out-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 26px;flex-wrap:wrap}
+  pre.prompt{
+    margin:0;padding:0 26px 26px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.62;
+    white-space:pre-wrap;word-break:break-word;color:var(--ink);
+  }
+
+  /* ---------- sections ---------- */
+  section{margin-bottom:56px}
+  .shead{font-size:clamp(21px,3vw,26px);font-weight:700;letter-spacing:-.02em;margin-bottom:20px}
+  .lede{color:var(--muted);font-size:15px;margin:-8px 0 18px;max-width:64ch}
+
+  /* ---------- bring your own lab ---------- */
+  .own{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .own .fields{grid-template-columns:1fr;padding-top:22px}
+  .own .toggles{padding-top:6px}
+
+  /* ---------- accordions ---------- */
+  .acc{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;margin-bottom:10px}
+  .acc>summary{
+    list-style:none;cursor:pointer;padding:16px 20px;
+    display:flex;align-items:center;gap:14px;
+    font-family:Archivo,sans-serif;font-size:16px;font-weight:600;letter-spacing:-.01em;
+  }
+  .acc>summary::-webkit-details-marker{display:none}
+  .acc>summary::after{content:"+";margin-left:auto;font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:19px;flex:none}
+  .acc[open]>summary::after{content:"–"}
+  .acc[open]>summary{border-bottom:1px solid var(--line)}
+  .acc .tag{
+    font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent);flex:none;
+  }
+  .abody{padding:18px 20px 22px;display:flex;flex-direction:column;gap:14px}
+  .abody pre{
+    margin:0;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.7;
+    white-space:pre-wrap;word-break:break-word;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:7px;padding:14px;
+  }
+  .abody pre[contenteditable="true"],.abody pre[contenteditable="plaintext-only"]{background:var(--surface);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .abody .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .abody .row>span{font-size:13.5px;color:var(--muted);flex:1;min-width:200px}
+  .abody .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .edited-note{font-size:12.5px;color:var(--warn)}
+
+  /* ---------- library ---------- */
+  .lib{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:26px}
+  .lib h3{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .lib ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .lib a{font-size:14.5px;text-decoration:none}
+  .lib a:hover{text-decoration:underline}
+  .lib .note{font-size:12px;color:var(--muted);margin-top:6px}
+
+  footer{border-top:1px solid var(--line);margin-top:64px;padding-top:26px;color:var(--muted);font-size:13.5px;display:flex;flex-direction:column;gap:7px}
+  footer a{color:inherit}
+
+  @media (max-width:560px){
+    .fields{grid-template-columns:1fr}
+    .builder-top,.fields,.toggles,.out-bar{padding-left:18px;padding-right:18px}
+    pre.prompt{padding-left:18px;padding-right:18px}
+    .abody{padding:16px 14px 18px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  @media print{
+    .btn,.toggles,.builder-actions,.theme-btn{display:none!important}
+    body{background:#fff;color:#000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="mast-top">
+      <p class="eyebrow">ISTA 2026 &middot; Teaching Science in the Age of AI</p>
+      <button class="btn ghost theme-btn" id="theme-btn" type="button" aria-label="Color theme: automatic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor"/></svg>
+        <span id="theme-label">Auto</span>
+      </button>
+    </div>
+    <h1>Beyond the Worksheet</h1>
+    <p class="sub">Build a working simulation for your own lab in about twenty minutes, without writing code.</p>
+    <p class="who">Matt Hopkins &amp; Karl Craddock &nbsp;/&nbsp; William Fremd High School &nbsp;/&nbsp; <span>District 211</span></p>
+  </header>
+
+  <!-- ============ BUILDER ============ -->
+  <div class="builder">
+    <div class="builder-top">
+      <div>
+        <p class="eyebrow">Start here</p>
+        <h2>Prompt Builder</h2>
+        <p class="hint">Fill in your own lab. The prompt below writes itself, and your answers are saved on this device.</p>
+      </div>
+      <div class="builder-actions">
+        <button class="btn ghost" type="button" id="b-clear">Clear</button>
+        <button class="btn ghost" type="button" id="b-example">Load example</button>
+      </div>
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <label for="ai">AI tool you&rsquo;ll use</label>
+        <select id="ai">
+          <option value="gemini" selected>Gemini</option>
+          <option value="claude">Claude</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="copilot">Microsoft Copilot</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="b-disc">Discipline</label>
+        <select id="b-disc">
+          <option>Biology</option>
+          <option selected>Chemistry</option>
+          <option>Earth &amp; Space Science</option>
+          <option>Physical Science</option>
+          <option>Physics</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label for="b-name">Name of the tool</label>
+        <input id="b-name" type="text" autocomplete="off" placeholder="e.g. Combined Gas Law Explorer">
+      </div>
+      <div class="field full">
+        <label for="b-phen">Phenomenon students investigate</label>
+        <input id="b-phen" type="text" autocomplete="off" placeholder="e.g. how the pressure of a fixed sample of gas responds when volume and temperature change">
+      </div>
+      <div class="field">
+        <label for="b-v1">Variable they control</label>
+        <input id="b-v1" type="text" autocomplete="off" placeholder="e.g. volume, 1.0 to 10.0 L">
+      </div>
+      <div class="field">
+        <label for="b-v2">Second variable (optional)</label>
+        <input id="b-v2" type="text" autocomplete="off" placeholder="e.g. temperature, 200 to 600 K">
+      </div>
+      <div class="field">
+        <label for="b-meas">What they measure</label>
+        <input id="b-meas" type="text" autocomplete="off" placeholder="e.g. pressure in atm">
+      </div>
+      <div class="field">
+        <label for="b-out">Visual output</label>
+        <select id="b-out">
+          <option>Live graph of the measured value</option>
+          <option>Animated 2D diagram of the apparatus</option>
+          <option>3D scene with lighting and shadows</option>
+          <option selected>Both a diagram and a live graph</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toggles" role="group" aria-label="Prompt options">
+      <label class="toggle"><input type="checkbox" id="t-table" checked> Data table</label>
+      <label class="toggle"><input type="checkbox" id="t-csv" checked> CSV export</label>
+      <label class="toggle"><input type="checkbox" id="t-schoology" checked> Submit to Schoology</label>
+      <label class="toggle"><input type="checkbox" id="t-math" checked> Check the math first</label>
+      <label class="toggle"><input type="checkbox" id="t-predict"> Predict first</label>
+      <label class="toggle"><input type="checkbox" id="t-contrast"> High contrast</label>
+    </div>
+
+    <div class="out">
+      <div class="out-bar">
+        <span class="eyebrow">Paste into <span class="ai-name">Gemini</span></span>
+        <button class="btn copy" type="button" data-target="b-output">Copy prompt</button>
+      </div>
+      <pre class="prompt" id="b-output" aria-live="off"></pre>
+    </div>
+  </div>
+
+
+  <!-- ============ BRING YOUR OWN LAB ============ -->
+  <section>
+    <h2 class="shead">Already have a lab you like?</h2>
+    <p class="lede">Upload the PDF to <span class="ai-name">Gemini</span> and paste this beside it. The document gives the AI your procedure; these three lines give it what a worksheet never says &mdash; what should move, what gets measured, and a demand to show its math before it builds.</p>
+    <div class="own">
+      <div class="fields">
+        <div class="field">
+          <label for="own-name">Name of the lab</label>
+          <input id="own-name" type="text" autocomplete="off" placeholder="e.g. Acid-Base Periodicity Lab">
+        </div>
+        <div class="field">
+          <label for="own-change">What students should be able to change</label>
+          <input id="own-change" type="text" autocomplete="off" placeholder="e.g. temperature from 20 to 80 °C, and volume of water from 5 to 25 mL">
+        </div>
+        <div class="field">
+          <label for="own-measure">What they measure or record</label>
+          <input id="own-measure" type="text" autocomplete="off" placeholder="e.g. pH and the color of the solution">
+        </div>
+      </div>
+      <div class="toggles" role="group" aria-label="Options for your own lab">
+        <label class="toggle"><input type="checkbox" id="o-schoology" checked> Submit to Schoology</label>
+        <label class="toggle"><input type="checkbox" id="o-predict"> Predict first</label>
+        <label class="toggle"><input type="checkbox" id="o-contrast"> High contrast</label>
+      </div>
+      <div class="out">
+        <div class="out-bar">
+          <span class="eyebrow">Upload the PDF to <span class="ai-name">Gemini</span>, then paste this</span>
+          <button class="btn copy" type="button" data-target="own-output">Copy prompt</button>
+        </div>
+        <pre class="prompt" id="own-output"></pre>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ STARTERS ============ -->
+  <!-- Each starter's text lives in its <pre>. The Schoology line and any AI-specific line are added automatically. -->
+  <section>
+    <h2 class="shead">Starter prompts</h2>
+    <p class="lede">Copy one as-is, or tap <b>Edit</b> to change the numbers first. Your edits are what gets copied.</p>
+
+    <details class="acc">
+      <summary><span class="tag">Bio</span>Enzyme Activity Lab</summary>
+      <div class="abody">
+        <div class="row"><span>Saturation kinetics on substrate; denaturation is permanent once it happens.</span></div>
+        <pre class="starter" id="p-bio">Generate one single, complete HTML file for an Enzyme Activity Lab. Students investigate how temperature, pH and substrate concentration affect the rate of an enzyme-catalyzed reaction. Provide sliders for temperature (0 to 80 degrees Celsius), pH (1 to 14) and substrate concentration (0 to 100 percent). Put all the necessary math and rules into one section. Report reaction rate as a percentage of the maximum possible rate, calculated as the product of three factors: a temperature factor peaking at 37 degrees Celsius and falling off on both sides, a pH factor peaking at pH 7 and falling off on both sides, and a substrate factor that follows saturation kinetics, rate proportional to S divided by (25 + S), so the curve rises steeply then flattens. Track the highest temperature the enzyme has been exposed to since the last reset: once that has ever exceeded 60 degrees Celsius the rate is permanently zero regardless of the other sliders, and a Reset enzyme button is the only way back. The layout must include a visible drawing area (a canvas) showing an animated enzyme and substrate, plus a live graph of reaction rate against the variable currently being changed. Include a button to log each trial into a data table and a button to download it as a CSV file. Use a clean, modern design for all styling, and make sure it works on a phone or tablet.</pre>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary><span class="tag">Chem</span>Titration Curve Builder</summary>
+      <div class="abody">
+        <div class="row"><span>One charge-balance solve, checked against known pH values.</span></div>
+        <pre class="starter" id="p-chem">Generate one single, complete HTML file for a Titration Curve Builder. Students titrate 25.00 mL of an acid with 0.100 molar sodium hydroxide, using phenolphthalein as the indicator. Let the user select the acid from a dropdown of hydrochloric acid (strong), acetic acid (Ka = 1.8 times 10 to the minus 5) and benzoic acid (Ka = 6.3 times 10 to the minus 5), set its starting concentration from 0.01 to 1.00 molar, and add titrant in adjustable increments by clicking a burette. Put all the necessary math and rules into one section. Do not use separate formulas for the different regions of the curve. Instead solve the charge balance numerically at every point, [Na+] + [H+] = [A-] + [OH-], with [A-] = Ca times Ka divided by (Ka + [H+]), using bisection on [H+], so the buffer region, the equivalence point and the excess-base region all fall out of one equation. Check your work against these values for 0.100 molar acid: acetic acid should read pH 2.88 at the start, 4.75 at half equivalence and 8.72 at equivalence; hydrochloric acid should read exactly 7.00 at equivalence. The layout must include a visible drawing area (a canvas) showing the burette and flask, with the solution turning pink above pH 8.2, and a live graph of pH against volume of titrant added that draws point by point. Include a button to log each trial into a data table and a button to download it as a CSV file. Use a clean, modern design for all styling, and make sure it works on a phone or tablet.</pre>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary><span class="tag">Physics</span>Projectile Motion with Drag</summary>
+      <div class="abody">
+        <div class="row"><span>Drag on, and mass changes the optimum angle. That argument is the lesson.</span></div>
+        <pre class="starter" id="p-phys">Generate one single, complete HTML file for a Projectile Motion Lab. Students launch a projectile and investigate what launch angle maximizes range. Provide sliders for launch angle (0 to 90 degrees), initial speed (1 to 60 meters per second) and projectile mass (0.1 to 10 kilograms), plus a checkbox to turn air resistance on and off. Put all the necessary math and rules into one section. Launch from ground level with gravity 9.81 meters per second squared. With air resistance off, use the standard projectile equations. With it on, integrate the motion numerically with a quadratic drag force of magnitude k times speed squared, opposing the velocity, where k = 0.5 times air density 1.225 times drag coefficient 0.47 times the cross-sectional area of a sphere of radius 0.05 meters, and divide the drag force by the mass to get the acceleration. This makes mass matter only when drag is on, which is the point of the lab: at 30 meters per second a 0.1 kilogram projectile should peak in the high 30s of degrees and a 10 kilogram one near 45 degrees. Display the optimum angle found so far. The layout must include a visible drawing area (a canvas) that animates the flight path and leaves a trace of previous shots for comparison, plus a live readout of maximum height, time of flight and range. Include a button to log each shot into a data table and a button to download it as a CSV file. Use a clean, modern design for all styling, and make sure it works on a phone or tablet.</pre>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary><span class="tag">Earth</span>Earthquake Epicenter Triangulation</summary>
+      <div class="abody">
+        <div class="row"><span>Map scale and station positions pinned so the circles actually intersect.</span></div>
+        <pre class="starter" id="p-earth">Generate one single, complete HTML file for an Earthquake Epicenter Locator. The program should show a square map 600 kilometers on each side with a visible scale bar, place three seismograph stations at fixed points on it (100, 100), (500, 150) and (300, 500) in kilometers, and secretly place an earthquake epicenter at a random point at least 50 kilometers inside the edges of the map. For each station, draw a seismogram with a labeled time axis in seconds and clearly marked P-wave and S-wave arrivals. Put all the necessary math and rules into one section, using a P-wave speed of 6.1 kilometers per second and an S-wave speed of 3.5 kilometers per second, so that distance in kilometers equals the P-S lag in seconds divided by (1/3.5 - 1/6.1), which is about 8.21 kilometers per second of lag. Students read the lag off each seismogram, type it into an input box, and the program draws a circle of the corresponding radius around that station, drawn to the same scale as the map so the three circles intersect at the epicenter. The layout must include a visible drawing area (a canvas) showing the map, the stations and the circles as they are drawn. Include a button labeled 'Check my epicenter' that reveals the true location and the student's error in kilometers. Use a clean, modern design for all styling, and make sure it works on a phone or tablet.</pre>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary><span class="tag">Phys Sci</span>Density Column</summary>
+      <div class="abody">
+        <div class="row"><span>Named liquids and densities, so the layers mean something.</span></div>
+        <pre class="starter" id="p-ps">Generate one single, complete HTML file for a Density Column Lab. The program shows a graduated cylinder holding four liquid layers, labeled, from the bottom up: corn syrup at 1.38, water at 1.00, vegetable oil at 0.92 and lamp oil at 0.78 grams per cubic centimeter. Students build an object by setting its mass (10 to 500 grams) and its volume (10 to 500 cubic centimeters) with sliders, then drop it into the column and watch it settle. Put all the necessary math and rules into one section: calculate density as mass divided by volume, display it to two decimal places, and rest the object on top of the first layer that is denser than it is. An object denser than 1.38 sinks to the bottom, and one less dense than 0.78 floats on the surface. Start with default values that put the object in the middle of the column. The layout must include a visible drawing area (a canvas) that animates the object sinking or floating to its resting layer. Include a challenge mode that names a target layer and asks the student to build an object that will float there. Include a button to log each attempt into a data table and a button to download it as a CSV file. Use a clean, modern design for all styling, and make sure it works on a phone or tablet.</pre>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ LINKS ============ -->
+  <section>
+    <h2 class="shead">Where everything lives</h2>
+    <div class="lib">
+      <div>
+        <h3>The four we showed you</h3>
+        <ul>
+          <li><a href="https://fremdscience.github.io/ScienceSims/balancing_equations.html">Balancing Equations</a> &mdash; chem, 3D</li>
+          <li><a href="https://fremdscience.github.io/ScienceSims/lick_your_rats.html">Lick Your Rats</a> &mdash; bio</li>
+          <li><a href="https://fremdscience.github.io/ScienceSims/newtons_law_lab.html">Newton's Law Lab</a> &mdash; physics</li>
+          <li><a href="https://fremdscience.github.io/ScienceSims/acid_base_perodicity.html">Acid-Base Periodicity</a> &mdash; chem</li>
+        </ul>
+      </div>
+      <div>
+        <h3>The whole library</h3>
+        <ul>
+          <li><a href="https://fremdscience.github.io/ScienceSims/">fremdscience.github.io/ScienceSims</a></li>
+          <li><a href="https://github.com/FremdScience/ScienceSims">The repo on GitHub</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Works in progress</h3>
+        <ul>
+          <li><a href="https://codepen.io/Karl-Craddock/full/yyepEyg">Acid-Base Periodicity Lab</a> &mdash; Karl, CodePen</li>
+          <li><a href="https://fremdscience.github.io/ScienceSims/Formula_Writing_and_Naming_Practice.html">Formula Writing &amp; Naming Practice</a> &mdash; Matt</li>
+          <li><a href="https://codepen.io/Karl-Craddock">More from Karl</a> &middot; <a href="https://codepen.io/Matthew-Hopkins-the-selector">More from Matt</a></li>
+        </ul>
+        <p class="note">Still being tested. Try them, break them, tell us.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Free to use, free to copy. Change the numbers, change the subject, put your name on it.</p>
+    <p>
+      <a class="em" data-u="mphopkins" data-d="d211.org" href="#">mphopkins [at] d211 [dot] org</a>
+      &nbsp;&middot;&nbsp;
+      <a class="em" data-u="kcraddock" data-d="d211.org" href="#">kcraddock [at] d211 [dot] org</a>
+      &nbsp;&middot;&nbsp; ISTA, October 5, 2026
+    </p>
+  </footer>
+
+</div>
+
+<p class="sr-only" id="announce" aria-live="polite"></p>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var STORE = "prompt-builder-v1";
+
+  /* ---------- safe storage (private mode / blocked storage just skips saving) ---------- */
+  function load(){ try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch(e){ return {}; } }
+  function save(obj){ try { localStorage.setItem(STORE, JSON.stringify(obj)); } catch(e){} }
+  var state = load();
+
+  /* ---------- AI tool settings ---------- */
+  var AI = {
+    gemini:  { name:"Gemini",            tail:"" },
+    claude:  { name:"Claude",            tail:"Build it as an HTML artifact so I can preview it, and give me the complete file." },
+    chatgpt: { name:"ChatGPT",           tail:"Open it in Canvas so I can preview it, and give me the complete file, not a partial snippet." },
+    copilot: { name:"Microsoft Copilot", tail:"Give me the complete file in a single code block so I can copy it, not a partial snippet." }
+  };
+  function ai(){ return AI[$("ai").value] || AI.gemini; }
+
+  /* ---------- shared prompt sentences ---------- */
+  var SCHOOLOGY = "Include a clear button at the bottom labeled “Submit to Schoology”. When tapped, it should open the device’s print dialog with window.print(), using a print stylesheet that hides the sliders and buttons and lays out the title, the drawing, the graph and the data table on clean pages. Convert each canvas to an image just before printing so it shows up in the PDF. This lets a student on an iPad choose Save as PDF and upload that PDF to their Schoology assignment.";
+  var PRINT_ONLY = "Include a clear button at the bottom labeled “Print / Save Results” that opens the print dialog with window.print(), using a print stylesheet that hides the controls and keeps the drawing, graph and data table. Convert each canvas to an image just before printing so it shows up in the PDF.";
+  var PREDICT = "Before the student can run a trial, require them to type a written prediction of what will happen. Show their prediction beside the result afterward so they can compare.";
+  var CONTRAST = "Display all text in a large, easy-to-read, high-contrast style suitable for students with visual impairments, and make every control operable by keyboard.";
+  var MATH = "Before you write any code, list the equations and constants you will use and one value I can check by hand. Then build the file.";
+
+  function withTail(text){ var t = ai().tail; return t ? text + " " + t : text; }
+
+  /* ---------- builder ---------- */
+  var EXAMPLE = {
+    "b-disc":"Chemistry",
+    "b-name":"Combined Gas Law Explorer",
+    "b-phen":"how the pressure of a fixed 0.100 mol sample of an ideal gas responds when volume and temperature change, using PV = nRT with R = 0.08206 L atm per mol K",
+    "b-v1":"volume, 1.0 to 10.0 L",
+    "b-v2":"temperature, 200 to 600 K",
+    "b-meas":"pressure in atm, which spans about 0.16 to 4.9 atm over those ranges",
+    "b-out":"Both a diagram and a live graph"
+  };
+  var TEXT_IDS = ["b-name","b-phen","b-v1","b-v2","b-meas","own-name","own-change","own-measure"];
+  var SELECT_IDS = ["ai","b-disc","b-out"];
+  var CHECK_IDS = ["t-table","t-csv","t-schoology","t-math","t-predict","t-contrast","o-schoology","o-predict","o-contrast"];
+
+  function val(id){ return ($(id).value || "").trim(); }
+  function on(id){ return $(id).checked; }
+
+  function buildMain(){
+    var name = val("b-name") || "Science Simulation";
+    var disc = val("b-disc");
+    var phen = val("b-phen") || "the phenomenon described below";
+    var v1 = val("b-v1"), v2 = val("b-v2");
+    var measFull = val("b-meas") || "the measured result";
+    var meas = measFull.split(",")[0].trim() || measFull;
+    var vis = val("b-out");
+
+    var p = [];
+    p.push("Generate one single, complete HTML file for a " + disc + " simulation called “" + name + "”. Students investigate " + phen + ".");
+
+    var controls = [];
+    if (v1) controls.push(v1);
+    if (v2) controls.push(v2);
+    if (controls.length === 2) {
+      p.push("Provide clearly labeled sliders for " + controls[0] + " and for " + controls[1] + ". Display " + measFull + " and update it live as the sliders move.");
+    } else if (controls.length === 1) {
+      p.push("Provide a clearly labeled slider for " + controls[0] + ". Display " + measFull + " and update it live as the slider moves.");
+    } else {
+      p.push("Provide clearly labeled controls for the variables students should manipulate, and display " + meas + " live.");
+    }
+
+    var q = [];
+    q.push("Put all the necessary math and rules into one section so the calculations are easy to find and check.");
+
+    if (vis.indexOf("3D") > -1) {
+      q.push("Build the visualization as a 3D scene using React, Three.js and Cannon.js, all compiled into this one HTML file. Include lighting and shadows and use simple 3D geometries for the objects. The layout must include a visible drawing area (a canvas) to show the results.");
+    } else if (vis.indexOf("Both") === 0) {
+      q.push("The layout must include a visible drawing area (a canvas) showing an animated diagram of the apparatus, alongside a live graph of " + meas + " that redraws as the student changes the controls.");
+    } else if (vis.indexOf("Animated") === 0) {
+      q.push("The layout must include a visible drawing area (a canvas) showing an animated diagram of the apparatus that responds to the controls in real time.");
+    } else {
+      q.push("The layout must include a visible drawing area (a canvas) with a live graph of " + meas + " that redraws as the student changes the controls.");
+    }
+
+    if (on("t-predict")) q.push(PREDICT);
+    if (on("t-table")) {
+      var t = "Include a button that logs each trial into a data table";
+      if (controls.length) t += " recording " + controls.map(function(c){ return c.split(",")[0].trim(); }).join(", ") + " and " + meas;
+      q.push(t + ".");
+    }
+    if (on("t-csv")) q.push("Include a button that downloads the logged data as a CSV file.");
+    if (on("t-contrast")) q.push(CONTRAST);
+    q.push("Use a clean, modern design for all styling, and make sure it works on a phone or tablet.");
+    q.push(on("t-schoology") ? SCHOOLOGY : PRINT_ONLY);
+
+    var parts = [p.join(" "), q.join(" ")];
+    if (on("t-math")) parts.push(MATH);
+    parts[parts.length - 1] = withTail(parts[parts.length - 1]);
+    $("b-output").textContent = parts.join("\n\n");
+  }
+
+  /* ---------- bring your own lab ---------- */
+  function buildOwn(){
+    var name = val("own-name"), change = val("own-change"), meas = val("own-measure");
+    var p = [];
+    p.push("I have attached my lab" + (name ? ", “" + name + "”" : "") + ". Use this document to build the simulation: keep its procedure, its units, its numbers and its reading level, and do not add steps that are not in it. Generate one single, complete HTML file for it.");
+    var q = [];
+    q.push("Make " + (change || "the quantities the document asks students to vary") + " adjustable with clearly labeled sliders, using the ranges and units the document uses, and display " + (meas || "what the document asks students to record") + ", updating live as the sliders move.");
+    q.push("Put all the necessary math and rules into one section.");
+    q.push("The layout must include a visible drawing area (a canvas) showing the apparatus from the document alongside a live graph of what students measure.");
+    if (on("o-predict")) q.push(PREDICT);
+    q.push("Rebuild the document’s data table inside the page, log each trial into it, and add a button that downloads it as a CSV file.");
+    if (on("o-contrast")) q.push(CONTRAST);
+    q.push("Use a clean, modern design for all styling, and make sure it works on a phone or tablet.");
+    q.push(on("o-schoology") ? SCHOOLOGY : PRINT_ONLY);
+    p.push(q.join(" "));
+    p.push(withTail("Before you write any code, list the equations and constants you will use and one value I can check by hand, and tell me in three sentences what you took from the document. Then build the file."));
+    $("own-output").textContent = p.join("\n\n");
+  }
+
+  /* ---------- starters: base text + Schoology line + AI line ---------- */
+  var starters = Array.prototype.slice.call(document.querySelectorAll("pre.starter"));
+  var editedStarters = state.starters || {};
+  starters.forEach(function(pre){ pre.dataset.base = pre.textContent.trim(); });
+
+  function starterText(pre){ return withTail(pre.dataset.base + " " + SCHOOLOGY); }
+  function renderStarters(){
+    starters.forEach(function(pre){
+      if (editedStarters[pre.id]) { pre.textContent = editedStarters[pre.id]; markEdited(pre, true); }
+      else if (pre.getAttribute("contenteditable") !== "true" && pre.getAttribute("contenteditable") !== "plaintext-only") { pre.textContent = starterText(pre); markEdited(pre, false); }
+    });
+  }
+
+  function supportsPlaintextOnly(){
+    var d = document.createElement("div");
+    try { d.contentEditable = "plaintext-only"; } catch(e){ return false; }
+    return d.contentEditable === "plaintext-only";
+  }
+  var EDIT_MODE = supportsPlaintextOnly() ? "plaintext-only" : "true";
+
+  function markEdited(pre, yes){
+    var note = pre.parentNode.querySelector(".edited-note");
+    var reset = pre.parentNode.querySelector(".reset");
+    if (note) note.hidden = !yes;
+    if (reset) reset.hidden = !yes;
+  }
+
+  starters.forEach(function(pre){
+    var row = pre.parentNode.querySelector(".row");
+    var btns = document.createElement("div");
+    btns.className = "btns";
+    btns.innerHTML =
+      '<span class="edited-note" hidden>Edited</span>' +
+      '<button class="btn ghost reset" type="button" hidden>Reset</button>' +
+      '<button class="btn ghost edit" type="button" aria-pressed="false">Edit</button>' +
+      '<button class="btn copy" type="button" data-target="' + pre.id + '">Copy</button>';
+    row.appendChild(btns);
+
+    var editBtn = btns.querySelector(".edit");
+    editBtn.addEventListener("click", function(){
+      var editing = editBtn.getAttribute("aria-pressed") === "true";
+      if (editing) {
+        pre.removeAttribute("contenteditable");
+        editBtn.setAttribute("aria-pressed","false");
+        editBtn.textContent = "Edit";
+      } else {
+        pre.setAttribute("contenteditable", EDIT_MODE);
+        pre.setAttribute("spellcheck","true");
+        editBtn.setAttribute("aria-pressed","true");
+        editBtn.textContent = "Done";
+        pre.focus();
+      }
+    });
+    pre.addEventListener("input", function(){
+      editedStarters[pre.id] = pre.innerText;
+      markEdited(pre, true);
+      persist();
+    });
+    btns.querySelector(".reset").addEventListener("click", function(){
+      delete editedStarters[pre.id];
+      pre.removeAttribute("contenteditable");
+      editBtn.setAttribute("aria-pressed","false");
+      editBtn.textContent = "Edit";
+      pre.textContent = starterText(pre);
+      markEdited(pre, false);
+      persist();
+      announce("Starter prompt reset");
+    });
+  });
+
+  /* ---------- AI name labels ---------- */
+  function renderAiNames(){
+    var n = ai().name;
+    document.querySelectorAll(".ai-name").forEach(function(el){ el.textContent = n; });
+  }
+
+  /* ---------- persistence ---------- */
+  function persist(){
+    var s = { fields:{}, checks:{}, starters:editedStarters, theme:state.theme };
+    TEXT_IDS.concat(SELECT_IDS).forEach(function(id){ s.fields[id] = $(id).value; });
+    CHECK_IDS.forEach(function(id){ s.checks[id] = $(id).checked; });
+    state = s; save(s);
+  }
+  function restore(){
+    var f = state.fields, c = state.checks;
+    if (f) {
+      TEXT_IDS.concat(SELECT_IDS).forEach(function(id){
+        if (typeof f[id] === "string" && (SELECT_IDS.indexOf(id) === -1 || $(id).querySelector('option[value="' + f[id] + '"],option:not([value])'))) $(id).value = f[id];
+      });
+      // If a saved select value wasn't valid, fall back to its first option
+      SELECT_IDS.forEach(function(id){ if ($(id).selectedIndex < 0) $(id).selectedIndex = 0; });
+    } else {
+      fillExample();
+    }
+    if (c) CHECK_IDS.forEach(function(id){ if (typeof c[id] === "boolean") $(id).checked = c[id]; });
+  }
+  function fillExample(){ Object.keys(EXAMPLE).forEach(function(id){ $(id).value = EXAMPLE[id]; }); }
+
+  function rebuildAll(){ renderAiNames(); buildMain(); buildOwn(); renderStarters(); persist(); }
+
+  TEXT_IDS.concat(SELECT_IDS, CHECK_IDS).forEach(function(id){
+    $(id).addEventListener("input", rebuildAll);
+    $(id).addEventListener("change", rebuildAll);
+  });
+
+  $("b-clear").addEventListener("click", function(){
+    ["b-name","b-phen","b-v1","b-v2","b-meas"].forEach(function(id){ $(id).value = ""; });
+    rebuildAll(); $("b-name").focus(); announce("Builder cleared");
+  });
+  $("b-example").addEventListener("click", function(){
+    fillExample(); rebuildAll(); announce("Example loaded");
+  });
+
+  /* ---------- copy ---------- */
+  function announce(msg){ var a = $("announce"); a.textContent = ""; setTimeout(function(){ a.textContent = msg; }, 30); }
+  function fallback(text, cb){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly",""); ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false; try { ok = document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+    if (ok) cb();
+  }
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest && e.target.closest("button.copy");
+    if (!btn) return;
+    e.preventDefault();
+    var el = $(btn.getAttribute("data-target"));
+    var text = (el.innerText || el.textContent).trim();
+    var done = function(){
+      if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+      btn.textContent = "Copied";
+      btn.classList.add("done");
+      announce("Prompt copied. Paste it into " + ai().name + ".");
+      clearTimeout(btn._t);
+      btn._t = setTimeout(function(){ btn.textContent = btn.dataset.label; btn.classList.remove("done"); }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text, done); });
+    } else { fallback(text, done); }
+  });
+
+  /* ---------- theme: auto -> light -> dark ---------- */
+  var THEMES = ["auto","light","dark"], LABELS = { auto:"Auto", light:"Light", dark:"Dark" };
+  function applyTheme(t){
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    else document.documentElement.removeAttribute("data-theme");
+    $("theme-label").textContent = LABELS[t] || "Auto";
+    $("theme-btn").setAttribute("aria-label", "Color theme: " + (LABELS[t] || "Auto").toLowerCase() + ". Tap to change.");
+  }
+  $("theme-btn").addEventListener("click", function(){
+    var cur = state.theme || "auto";
+    var next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+    state.theme = next; applyTheme(next); persist();
+  });
+
+  /* ---------- emails: assembled in the browser so scrapers don't see them in the source ---------- */
+  document.querySelectorAll("a.em").forEach(function(a){
+    var addr = a.dataset.u + "@" + a.dataset.d;
+    a.href = "mailto:" + addr;
+    a.textContent = addr;
+  });
+
+  /* ---------- go ---------- */
+  applyTheme(state.theme || "auto");
+  restore();
+  rebuildAll();
+})();
+</script>
+</body>
+</html>
